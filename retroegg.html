@@ -291,16 +291,6 @@ stone.castShadow = true;
 stone.receiveShadow = true;
 player.add(stone);
 
-for (const [x, y, z] of detailPositions) {
-    const detail = new THREE.Mesh(
-        new THREE.BoxGeometry(0.18, 0.15, 0.035),
-        detailMaterial
-    );
-
-    detail.position.set(x, y, z);
-    stone.add(detail);
-}
-
 player.position.set(0, 3.2, 0);
 scene.add(player);
 
