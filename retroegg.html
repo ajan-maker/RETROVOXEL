@@ -288,7 +288,23 @@ player.add(stone);
 
 player.position.set(0, 3.2, 0);
 scene.add(player);
+    
+// LIGHTER DIRT BLOCK UNDER THE EGG
 
+const eggDirt = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 0.45, 2.2),
+    new THREE.MeshStandardMaterial({
+        color: 0x9b7045,
+        roughness: 1,
+        flatShading: true
+    })
+);
+
+eggDirt.position.set(72, 0.225, 42);
+eggDirt.castShadow = true;
+eggDirt.receiveShadow = true;
+scene.add(eggDirt);
+    
 // FLOATING EGG IN A MAP CORNER
 
 const egg = new THREE.Group();
