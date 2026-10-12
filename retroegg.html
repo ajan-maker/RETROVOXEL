@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>RETROegg</title>
 
 <style>
@@ -16,6 +16,7 @@ body {
     overflow: hidden;
     font-family: Arial, sans-serif;
     background: #87ceeb;
+    touch-action: none;
 }
 
 canvas {
@@ -48,6 +49,91 @@ canvas {
     pointer-events: none;
 }
 
+/* Mobile and desktop directional buttons */
+
+#mobile-controls {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    display: grid;
+    grid-template-columns: 54px 54px 54px;
+    grid-template-rows: 54px 54px;
+    gap: 5px;
+    z-index: 10;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+.arrow-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(35, 40, 35, 0.82);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    border-radius: 12px;
+    font-size: 26px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    padding: 0;
+}
+
+.arrow-btn:active {
+    background: #27ae60;
+    transform: scale(0.94);
+}
+
+#up-btn {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#left-btn {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#down-btn {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#right-btn {
+    grid-column: 3;
+    grid-row: 2;
+}
+
+@media (max-width: 600px) {
+    #mobile-controls {
+        left: 12px;
+        bottom: 12px;
+        grid-template-columns: 48px 48px 48px;
+        grid-template-rows: 48px 48px;
+        gap: 4px;
+    }
+
+    .arrow-btn {
+        font-size: 23px;
+        border-radius: 10px;
+    }
+
+    #controls {
+        left: 12px;
+        bottom: 124px;
+        font-size: 11px;
+        padding: 7px 10px;
+    }
+
+    #logo {
+        top: 12px;
+        left: 12px;
+        font-size: 21px;
+    }
+}
+
 #status {
     position: fixed;
     top: 20px;
@@ -58,6 +144,7 @@ canvas {
     border-radius: 7px;
     font-size: 13px;
     z-index: 2;
+    pointer-events: none;
 }
 </style>
 </head>
@@ -68,12 +155,19 @@ canvas {
 
 <div id="status">FLY MODE: ON</div>
 
+<div id="mobile-controls">
+    <button class="arrow-btn" id="up-btn" aria-label="Move forward">▲</button>
+    <button class="arrow-btn" id="left-btn" aria-label="Move left">◀</button>
+    <button class="arrow-btn" id="down-btn" aria-label="Move backward">▼</button>
+    <button class="arrow-btn" id="right-btn" aria-label="Move right">▶</button>
+</div>
+
 <div id="controls">
     <b>CONTROLS</b><br>
-    W — Forward<br>
-    A — Left<br>
-    S — Backward<br>
-    D — Right<br>
+    W / ▲ — Forward<br>
+    A / ◀ — Left<br>
+    S / ▼ — Backward<br>
+    D / ▶ — Right<br>
     <br>
     <b>FLYING STONE</b>
 </div>
@@ -94,6 +188,7 @@ import * as THREE from "three";
 // =========================
 
 const scene = new THREE.Scene();
+
 scene.background = new THREE.Color(0x87ceeb);
 scene.fog = new THREE.Fog(0x87ceeb, 45, 150);
 
@@ -120,11 +215,13 @@ document.body.appendChild(renderer.domElement);
 // LIGHTING
 // =========================
 
-scene.add(new THREE.HemisphereLight(
-    0xffffff,
-    0x526b38,
-    2
-));
+scene.add(
+    new THREE.HemisphereLight(
+        0xffffff,
+        0x526b38,
+        2
+    )
+);
 
 const sunlight = new THREE.DirectionalLight(
     0xffffff,
@@ -147,6 +244,7 @@ scene.add(sunlight);
 // =========================
 
 const textureCanvas = document.createElement("canvas");
+
 textureCanvas.width = 256;
 textureCanvas.height = 256;
 
@@ -155,7 +253,6 @@ const ctx = textureCanvas.getContext("2d");
 ctx.fillStyle = "#4caa43";
 ctx.fillRect(0, 0, 256, 256);
 
-// Small grass details
 for (let i = 0; i < 3500; i++) {
     const x = Math.random() * 256;
     const y = Math.random() * 256;
@@ -183,10 +280,14 @@ grassTexture.repeat.set(24, 16);
 grassTexture.colorSpace = THREE.SRGBColorSpace;
 
 // =========================
-// LARGE RECTANGULAR WORLD
+// LARGE RECTANGULAR GRASS WORLD
 // =========================
 
-const groundGeometry = new THREE.BoxGeometry(160, 1, 100);
+const groundGeometry = new THREE.BoxGeometry(
+    160,
+    1,
+    100
+);
 
 const groundMaterial = new THREE.MeshStandardMaterial({
     map: grassTexture,
@@ -206,12 +307,16 @@ scene.add(ground);
 // Ground top is at y = 0.
 
 // =========================
-// STONE BLOCK CHARACTER
+// FLYING STONE CHARACTER
 // =========================
 
 const player = new THREE.Group();
 
-const stoneGeometry = new THREE.BoxGeometry(1.8, 1.8, 1.8);
+const stoneGeometry = new THREE.BoxGeometry(
+    1.8,
+    1.8,
+    1.8
+);
 
 const stoneMaterial = new THREE.MeshStandardMaterial({
     color: 0x888b91,
@@ -229,7 +334,8 @@ stone.receiveShadow = true;
 
 player.add(stone);
 
-// Small stone details
+// Stone details
+
 const detailMaterial = new THREE.MeshStandardMaterial({
     color: 0x686c72,
     roughness: 1
@@ -252,13 +358,14 @@ for (const [x, y, z] of detailPositions) {
     stone.add(detail);
 }
 
-// Always floating above the ground!
+// The character always floats above the ground.
+
 player.position.set(0, 3.2, 0);
 
 scene.add(player);
 
 // =========================
-// MOVEMENT
+// MOVEMENT: WASD + ARROWS
 // =========================
 
 const keys = {};
@@ -266,7 +373,9 @@ const keys = {};
 window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
 
-    if (["w", "a", "s", "d", " "].includes(key)) {
+    if (["w", "a", "s", "d", "arrowup",
+         "arrowdown", "arrowleft", "arrowright",
+         " "].includes(key)) {
         event.preventDefault();
     }
 
@@ -282,6 +391,41 @@ window.addEventListener("blur", () => {
         keys[key] = false;
     }
 });
+
+// Mobile directional buttons
+
+const buttonKeys = {
+    "up-btn": "w",
+    "left-btn": "a",
+    "down-btn": "s",
+    "right-btn": "d"
+};
+
+for (const [id, key] of Object.entries(buttonKeys)) {
+    const button = document.getElementById(id);
+
+    button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        keys[key] = true;
+        button.setPointerCapture(event.pointerId);
+    });
+
+    function releaseKey(event) {
+        event.preventDefault();
+        keys[key] = false;
+    }
+
+    button.addEventListener("pointerup", releaseKey);
+    button.addEventListener("pointercancel", releaseKey);
+
+    button.addEventListener("lostpointercapture", () => {
+        keys[key] = false;
+    });
+
+    button.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+    });
+}
 
 // =========================
 // CAMERA
@@ -302,35 +446,58 @@ function animate() {
     const delta = Math.min(clock.getDelta(), 0.05);
     const speed = 10 * delta;
 
-    // WASD movement on the grass world
-    if (keys["w"]) player.position.z -= speed;
-    if (keys["s"]) player.position.z += speed;
-    if (keys["a"]) player.position.x -= speed;
-    if (keys["d"]) player.position.x += speed;
+    // Keyboard movement
 
-    // Keep the player inside the rectangular world
+    if (keys["w"] || keys["arrowup"]) {
+        player.position.z -= speed;
+    }
+
+    if (keys["s"] || keys["arrowdown"]) {
+        player.position.z += speed;
+    }
+
+    if (keys["a"] || keys["arrowleft"]) {
+        player.position.x -= speed;
+    }
+
+    if (keys["d"] || keys["arrowright"]) {
+        player.position.x += speed;
+    }
+
+    // Keep the character inside the world.
+
     player.position.x = THREE.MathUtils.clamp(
-        player.position.x, -78, 78
+        player.position.x,
+        -78,
+        78
     );
 
     player.position.z = THREE.MathUtils.clamp(
-        player.position.z, -48, 48
+        player.position.z,
+        -48,
+        48
     );
 
-    // Constant floating height: never touches the ground
+    // Constant floating height.
+
     player.position.y = 3.2;
 
-    // Slight floating-block rotation
+    // Slowly rotate the stone.
+
     stone.rotation.y += delta * 0.35;
 
-    // Follow the player
+    // Follow the character with the camera.
+
     const targetCameraPosition = new THREE.Vector3(
         player.position.x,
         player.position.y + 5,
         player.position.z + 11
     );
 
-    camera.position.lerp(targetCameraPosition, 5 * delta);
+    camera.position.lerp(
+        targetCameraPosition,
+        5 * delta
+    );
 
     camera.lookAt(
         player.position.x,
@@ -349,6 +516,7 @@ animate();
 
 window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
+
     camera.updateProjectionMatrix();
 
     renderer.setSize(
