@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,9 +7,7 @@
 <title>RETROegg</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html, body {
     width: 100%;
@@ -20,13 +19,8 @@ html, body {
     touch-action: none;
 }
 
-body {
-    position: relative;
-}
-
-canvas {
-    display: block;
-}
+body { position: relative; }
+canvas { display: block; }
 
 #logo {
     position: fixed;
@@ -77,25 +71,10 @@ canvas {
     transform: scale(0.94);
 }
 
-#up-btn {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-#left-btn {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-#down-btn {
-    grid-column: 2;
-    grid-row: 2;
-}
-
-#right-btn {
-    grid-column: 3;
-    grid-row: 2;
-}
+#up-btn { grid-column: 2; grid-row: 1; }
+#left-btn { grid-column: 1; grid-row: 2; }
+#down-btn { grid-column: 2; grid-row: 2; }
+#right-btn { grid-column: 3; grid-row: 2; }
 
 #controls {
     position: fixed;
@@ -260,7 +239,7 @@ grassTexture.wrapT = THREE.RepeatWrapping;
 grassTexture.repeat.set(24, 16);
 grassTexture.colorSpace = THREE.SRGBColorSpace;
 
-// LARGE RECTANGULAR GRASS WORLD
+// GRASS WORLD
 
 const ground = new THREE.Mesh(
     new THREE.BoxGeometry(160, 1, 100),
@@ -274,7 +253,23 @@ ground.position.y = -0.5;
 ground.receiveShadow = true;
 scene.add(ground);
 
-// STONE BLOCK CHARACTER
+// SMALL SQUARE DIRT BLOCK AT SPAWN
+
+const dirt = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 0.45, 2.2),
+    new THREE.MeshStandardMaterial({
+        color: 0x79502b,
+        roughness: 1,
+        flatShading: true
+    })
+);
+
+dirt.position.set(0, 0.225, 0);
+dirt.castShadow = true;
+dirt.receiveShadow = true;
+scene.add(dirt);
+
+// PLAYER
 
 const player = new THREE.Group();
 
@@ -293,6 +288,30 @@ player.add(stone);
 
 player.position.set(0, 3.2, 0);
 scene.add(player);
+
+// FLOATING EGG IN A MAP CORNER
+
+const egg = new THREE.Group();
+
+const eggShell = new THREE.Mesh(
+    new THREE.SphereGeometry(0.85, 32, 24),
+    new THREE.MeshStandardMaterial({
+        color: 0xfff4d6,
+        roughness: 0.35,
+        metalness: 0.02
+    })
+);
+
+// Stretch the sphere vertically to create an egg-like shape.
+eggShell.scale.set(0.72, 1, 0.72);
+eggShell.castShadow = true;
+eggShell.receiveShadow = true;
+egg.add(eggShell);
+
+// Position it near the far corner of the map,
+// floating at the same height as the player.
+egg.position.set(72, 3.2, 42);
+scene.add(egg);
 
 // MOVEMENT: WASD + ARROWS
 
@@ -384,7 +403,6 @@ const targetCameraPosition = new THREE.Vector3();
 const cameraLookTarget = new THREE.Vector3();
 
 function updateCamera(delta = 1) {
-    // No pitch: camera height remains fixed.
     targetCameraPosition.set(
         player.position.x + cameraDistance * Math.sin(cameraYaw),
         player.position.y + cameraHeight,
@@ -411,9 +429,7 @@ function updateCamera(delta = 1) {
 
 updateCamera();
 
-// Mouse drag on desktop; finger drag on mobile.
-// Movement buttons are outside the canvas, so pressing them
-// never rotates the camera.
+// CAMERA DRAG
 
 renderer.domElement.addEventListener("pointerdown", (event) => {
     if (event.pointerType === "mouse" && event.button !== 0) {
@@ -434,7 +450,6 @@ renderer.domElement.addEventListener("pointermove", (event) => {
     const dx = event.clientX - lastPointerX;
     lastPointerX = event.clientX;
 
-    // Only horizontal pointer movement rotates the camera.
     cameraYaw -= dx * cameraSensitivity;
 });
 
@@ -460,7 +475,10 @@ function animate() {
     const delta = Math.min(clock.getDelta(), 0.05);
     const speed = 10 * delta;
 
-    // Calculate movement relative to the camera's horizontal direction.
+    // Rotate the egg around its own vertical axis.
+    egg.rotation.y += 1.5 * delta;
+
+    // Movement relative to camera direction.
     forward.set(
         -Math.sin(cameraYaw),
         0,
@@ -491,13 +509,12 @@ function animate() {
         movement.add(right);
     }
 
-    // Normalize diagonal movement so it is not faster.
     if (movement.lengthSq() > 0) {
         movement.normalize();
         player.position.addScaledVector(movement, speed);
     }
 
-    // Keep the character inside the world.
+    // Keep the player inside the world.
     player.position.x = THREE.MathUtils.clamp(
         player.position.x, -78, 78
     );
@@ -506,7 +523,7 @@ function animate() {
         player.position.z, -48, 48
     );
 
-    // Keep the block floating without rotating.
+    // Keep the player floating at its original height.
     player.position.y = 3.2;
 
     updateCamera(delta);
