@@ -21,6 +21,7 @@ body {
 
 canvas {
     display: block;
+    touch-action: none;
 }
 
 #logo {
@@ -35,22 +36,22 @@ canvas {
     pointer-events: none;
 }
 
+/* Controls panel */
 #controls {
     position: fixed;
-    left: 20px;
-    bottom: 20px;
+    left: 18px;
+    bottom: 160px;
     padding: 12px 16px;
     color: white;
-    background: rgba(0, 0, 0, 0.55);
-    border-radius: 8px;
-    font-size: 14px;
-    line-height: 1.7;
-    z-index: 2;
+    background: rgba(0, 0, 0, 0.65);
+    border-radius: 9px;
+    font-size: 13px;
+    line-height: 1.8;
+    z-index: 5;
     pointer-events: none;
 }
 
-/* Mobile and desktop directional buttons */
-
+/* Directional buttons */
 #mobile-controls {
     position: fixed;
     left: 18px;
@@ -107,6 +108,20 @@ canvas {
 }
 
 @media (max-width: 600px) {
+    #logo {
+        top: 12px;
+        left: 12px;
+        font-size: 21px;
+    }
+
+    #controls {
+        left: 12px;
+        bottom: 145px;
+        padding: 8px 11px;
+        font-size: 11px;
+        line-height: 1.65;
+    }
+
     #mobile-controls {
         left: 12px;
         bottom: 12px;
@@ -119,32 +134,6 @@ canvas {
         font-size: 23px;
         border-radius: 10px;
     }
-
-    #controls {
-        left: 12px;
-        bottom: 124px;
-        font-size: 11px;
-        padding: 7px 10px;
-    }
-
-    #logo {
-        top: 12px;
-        left: 12px;
-        font-size: 21px;
-    }
-}
-
-#status {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    color: white;
-    background: rgba(0, 0, 0, 0.45);
-    padding: 10px 14px;
-    border-radius: 7px;
-    font-size: 13px;
-    z-index: 2;
-    pointer-events: none;
 }
 </style>
 </head>
@@ -153,23 +142,20 @@ canvas {
 
 <div id="logo">RETROegg</div>
 
-<div id="status">FLY MODE: ON</div>
-
-<div id="mobile-controls">
-    <button class="arrow-btn" id="up-btn" aria-label="Move forward">▲</button>
-    <button class="arrow-btn" id="left-btn" aria-label="Move left">◀</button>
-    <button class="arrow-btn" id="down-btn" aria-label="Move backward">▼</button>
-    <button class="arrow-btn" id="right-btn" aria-label="Move right">▶</button>
-</div>
-
 <div id="controls">
     <b>CONTROLS</b><br>
     W / ▲ — Forward<br>
     A / ◀ — Left<br>
     S / ▼ — Backward<br>
     D / ▶ — Right<br>
-    <br>
-    <b>FLYING STONE</b>
+    <span>Drag to look around</span>
+</div>
+
+<div id="mobile-controls">
+    <button class="arrow-btn" id="up-btn" aria-label="Move forward">▲</button>
+    <button class="arrow-btn" id="left-btn" aria-label="Move left">◀</button>
+    <button class="arrow-btn" id="down-btn" aria-label="Move backward">▼</button>
+    <button class="arrow-btn" id="right-btn" aria-label="Move right">▶</button>
 </div>
 
 <script type="importmap">
@@ -231,7 +217,6 @@ const sunlight = new THREE.DirectionalLight(
 sunlight.position.set(25, 40, 20);
 sunlight.castShadow = true;
 sunlight.shadow.mapSize.set(2048, 2048);
-
 sunlight.shadow.camera.left = -45;
 sunlight.shadow.camera.right = 45;
 sunlight.shadow.camera.top = 45;
@@ -244,7 +229,6 @@ scene.add(sunlight);
 // =========================
 
 const textureCanvas = document.createElement("canvas");
-
 textureCanvas.width = 256;
 textureCanvas.height = 256;
 
@@ -280,88 +264,43 @@ grassTexture.repeat.set(24, 16);
 grassTexture.colorSpace = THREE.SRGBColorSpace;
 
 // =========================
-// LARGE RECTANGULAR GRASS WORLD
+// RECTANGULAR GRASS WORLD
 // =========================
 
-const groundGeometry = new THREE.BoxGeometry(
-    160,
-    1,
-    100
-);
-
-const groundMaterial = new THREE.MeshStandardMaterial({
-    map: grassTexture,
-    roughness: 1
-});
-
 const ground = new THREE.Mesh(
-    groundGeometry,
-    groundMaterial
+    new THREE.BoxGeometry(160, 1, 100),
+    new THREE.MeshStandardMaterial({
+        map: grassTexture,
+        roughness: 1
+    })
 );
 
 ground.position.y = -0.5;
 ground.receiveShadow = true;
-
 scene.add(ground);
 
-// Ground top is at y = 0.
-
 // =========================
-// FLYING STONE CHARACTER
+// STONE BLOCK CHARACTER
 // =========================
 
 const player = new THREE.Group();
 
-const stoneGeometry = new THREE.BoxGeometry(
-    1.8,
-    1.8,
-    1.8
-);
-
-const stoneMaterial = new THREE.MeshStandardMaterial({
-    color: 0x888b91,
-    roughness: 1,
-    flatShading: true
-});
-
 const stone = new THREE.Mesh(
-    stoneGeometry,
-    stoneMaterial
+    new THREE.BoxGeometry(1.8, 1.8, 1.8),
+    new THREE.MeshStandardMaterial({
+        color: 0x888b91,
+        roughness: 1,
+        flatShading: true
+    })
 );
 
 stone.castShadow = true;
 stone.receiveShadow = true;
 
+// No dots or extra details on the stone.
 player.add(stone);
 
-// Stone details
-
-const detailMaterial = new THREE.MeshStandardMaterial({
-    color: 0x686c72,
-    roughness: 1
-});
-
-const detailPositions = [
-    [-0.35, 0.28, 0.91],
-    [0.38, -0.3, 0.91],
-    [0.12, 0.43, 0.91],
-    [-0.45, -0.38, 0.91]
-];
-
-for (const [x, y, z] of detailPositions) {
-    const detail = new THREE.Mesh(
-        new THREE.BoxGeometry(0.18, 0.15, 0.035),
-        detailMaterial
-    );
-
-    detail.position.set(x, y, z);
-    stone.add(detail);
-}
-
-// The character always floats above the ground.
-
 player.position.set(0, 3.2, 0);
-
 scene.add(player);
 
 // =========================
@@ -373,9 +312,11 @@ const keys = {};
 window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
 
-    if (["w", "a", "s", "d", "arrowup",
-         "arrowdown", "arrowleft", "arrowright",
-         " "].includes(key)) {
+    if ([
+        "w", "a", "s", "d",
+        "arrowup", "arrowdown",
+        "arrowleft", "arrowright"
+    ].includes(key)) {
         event.preventDefault();
     }
 
@@ -428,11 +369,118 @@ for (const [id, key] of Object.entries(buttonKeys)) {
 }
 
 // =========================
-// CAMERA
+// ROBLOX-STYLE CAMERA
+// DESKTOP: MOUSE DRAG
+// MOBILE: FINGER DRAG
 // =========================
 
-camera.position.set(0, 8, 12);
-camera.lookAt(player.position);
+let cameraYaw = 0;
+let cameraPitch = 0.18;
+
+const cameraDistance = 10;
+const cameraTargetHeight = 0.25;
+
+let dragging = false;
+let activePointerId = null;
+let lastPointerX = 0;
+let lastPointerY = 0;
+
+// Don't start camera dragging on the movement buttons.
+renderer.domElement.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) {
+        return;
+    }
+
+    dragging = true;
+    activePointerId = event.pointerId;
+
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+
+    if (event.pointerType === "mouse") {
+        renderer.domElement.style.cursor = "grabbing";
+    }
+});
+
+window.addEventListener("pointermove", (event) => {
+    if (!dragging || event.pointerId !== activePointerId) {
+        return;
+    }
+
+    const dx = event.clientX - lastPointerX;
+    const dy = event.clientY - lastPointerY;
+
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+
+    cameraYaw -= dx * 0.005;
+    cameraPitch -= dy * 0.004;
+
+    // Prevent the camera from going under the ground
+    // or flipping upside down.
+    cameraPitch = THREE.MathUtils.clamp(
+        cameraPitch,
+        -0.15,
+        0.85
+    );
+});
+
+function stopDragging(event) {
+    if (event.pointerId !== activePointerId) return;
+
+    dragging = false;
+    activePointerId = null;
+    renderer.domElement.style.cursor = "default";
+}
+
+window.addEventListener("pointerup", stopDragging);
+window.addEventListener("pointercancel", stopDragging);
+
+// =========================
+// CAMERA COLLISION
+// =========================
+
+const cameraPosition = new THREE.Vector3();
+const cameraTarget = new THREE.Vector3();
+
+function updateCamera(delta) {
+    const horizontalDistance =
+        cameraDistance * Math.cos(cameraPitch);
+
+    cameraTarget.set(
+        player.position.x,
+        player.position.y + cameraTargetHeight,
+        player.position.z
+    );
+
+    cameraPosition.set(
+        player.position.x +
+            horizontalDistance * Math.sin(cameraYaw),
+
+        player.position.y +
+            cameraDistance * Math.sin(cameraPitch) + 2.5,
+
+        player.position.z +
+            horizontalDistance * Math.cos(cameraYaw)
+    );
+
+    // Keep the camera outside the character.
+    const offset = cameraPosition.clone().sub(cameraTarget);
+    const minDistance = 4.0;
+
+    if (offset.length() < minDistance) {
+        offset.setLength(minDistance);
+        cameraPosition.copy(cameraTarget).add(offset);
+    }
+
+    // Smooth camera movement.
+    camera.position.lerp(
+        cameraPosition,
+        Math.min(1, 8 * delta)
+    );
+
+    camera.lookAt(cameraTarget);
+}
 
 // =========================
 // GAME LOOP
@@ -446,7 +494,7 @@ function animate() {
     const delta = Math.min(clock.getDelta(), 0.05);
     const speed = 10 * delta;
 
-    // Keyboard movement
+    // Character movement
 
     if (keys["w"] || keys["arrowup"]) {
         player.position.z -= speed;
@@ -464,46 +512,22 @@ function animate() {
         player.position.x += speed;
     }
 
-    // Keep the character inside the world.
+    // Stay inside the rectangular world.
 
     player.position.x = THREE.MathUtils.clamp(
-        player.position.x,
-        -78,
-        78
+        player.position.x, -78, 78
     );
 
     player.position.z = THREE.MathUtils.clamp(
-        player.position.z,
-        -48,
-        48
+        player.position.z, -48, 48
     );
 
-    // Constant floating height.
+    // Keep the character at a fixed height.
+    // It does not touch the grass or rotate.
 
     player.position.y = 3.2;
 
-    // Slowly rotate the stone.
-
-    stone.rotation.y += delta * 0.35;
-
-    // Follow the character with the camera.
-
-    const targetCameraPosition = new THREE.Vector3(
-        player.position.x,
-        player.position.y + 5,
-        player.position.z + 11
-    );
-
-    camera.position.lerp(
-        targetCameraPosition,
-        5 * delta
-    );
-
-    camera.lookAt(
-        player.position.x,
-        player.position.y,
-        player.position.z
-    );
+    updateCamera(delta);
 
     renderer.render(scene, camera);
 }
@@ -516,7 +540,6 @@ animate();
 
 window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
-
     camera.updateProjectionMatrix();
 
     renderer.setSize(
@@ -528,4 +551,3 @@ window.addEventListener("resize", () => {
 
 </body>
 </html>
-
