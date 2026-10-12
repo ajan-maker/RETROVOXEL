@@ -7,442 +7,470 @@
 
 <style>
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html, body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  font-family: Arial, sans-serif;
-  background: #87ceeb;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #87ceeb;
+    touch-action: none;
 }
 
-#game {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  touch-action: none;
-  outline: none;
+body {
+    position: relative;
 }
 
-#help {
-  position: fixed;
-  top: 15px;
-  left: 15px;
-  padding: 12px 15px;
-  color: white;
-  background: rgba(0, 0, 0, 0.55);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 10px;
-  font-size: 14px;
-  line-height: 1.6;
-  pointer-events: none;
-  user-select: none;
+canvas {
+    display: block;
+}
+
+#logo {
+    position: fixed;
+    top: 18px;
+    left: 22px;
+    color: white;
+    font-size: 25px;
+    font-weight: 900;
+    text-shadow: 2px 3px 4px #333;
+    z-index: 2;
+    pointer-events: none;
+}
+
+#mobile-controls {
+    position: fixed;
+    left: 18px;
+    bottom: 18px;
+    display: grid;
+    grid-template-columns: 54px 54px 54px;
+    grid-template-rows: 54px 54px;
+    gap: 5px;
+    z-index: 10;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
+
+.arrow-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(35, 40, 35, 0.82);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    border-radius: 12px;
+    font-size: 27px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    padding: 0;
+    outline: none;
+}
+
+.arrow-btn:active,
+.arrow-btn.pressed {
+    background: #27ae60;
+    transform: scale(0.94);
+}
+
+#up-btn {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+#left-btn {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+#down-btn {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+#right-btn {
+    grid-column: 3;
+    grid-row: 2;
 }
 
 #controls {
-  position: fixed;
-  left: 18px;
-  bottom: 18px;
-  display: grid;
-  grid-template-columns: repeat(3, 58px);
-  grid-template-rows: repeat(2, 58px);
-  gap: 7px;
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.move-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 58px;
-  height: 58px;
-  border: 1px solid rgba(255,255,255,0.35);
-  border-radius: 15px;
-  background: rgba(35, 39, 43, 0.78);
-  color: white;
-  font-size: 27px;
-  cursor: pointer;
-  box-shadow: 0 4px 0 rgba(0,0,0,0.3);
-  -webkit-tap-highlight-color: transparent;
-  touch-action: none;
-}
-
-.move-button:active,
-.move-button.pressed {
-  background: rgba(100, 110, 120, 0.95);
-  transform: translateY(3px);
-  box-shadow: 0 1px 0 rgba(0,0,0,0.3);
-}
-
-#up {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-#left {
-  grid-column: 1;
-  grid-row: 2;
-}
-
-#down {
-  grid-column: 2;
-  grid-row: 2;
-}
-
-#right {
-  grid-column: 3;
-  grid-row: 2;
+    position: fixed;
+    left: 20px;
+    bottom: 150px;
+    padding: 12px 16px;
+    color: white;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.7;
+    z-index: 2;
+    pointer-events: none;
 }
 
 @media (max-width: 600px) {
-  #help {
-    top: 10px;
-    left: 10px;
-    padding: 9px 11px;
-    font-size: 12px;
-  }
+    #mobile-controls {
+        left: 12px;
+        bottom: 12px;
+        grid-template-columns: 48px 48px 48px;
+        grid-template-rows: 48px 48px;
+        gap: 4px;
+    }
 
-  #controls {
-    left: 12px;
-    bottom: 14px;
-    grid-template-columns: repeat(3, 50px);
-    grid-template-rows: repeat(2, 50px);
-    gap: 6px;
-  }
+    .arrow-btn {
+        font-size: 25px;
+        border-radius: 10px;
+    }
 
-  .move-button {
-    width: 50px;
-    height: 50px;
-    font-size: 25px;
-    border-radius: 13px;
-  }
+    #controls {
+        left: 12px;
+        bottom: 118px;
+        font-size: 11px;
+        padding: 7px 10px;
+    }
+
+    #logo {
+        top: 12px;
+        left: 12px;
+        font-size: 21px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<canvas id="game"></canvas>
+<div id="logo">RETROegg</div>
 
-<div id="help">
-  <b>RETROegg</b><br>
-  WASD / Arrow Keys: Move<br>
-  Drag screen: Rotate camera
+<div id="mobile-controls">
+    <button class="arrow-btn" id="up-btn" aria-label="Move forward">⬆️</button>
+    <button class="arrow-btn" id="left-btn" aria-label="Move left">⬅️</button>
+    <button class="arrow-btn" id="down-btn" aria-label="Move backward">⬇️</button>
+    <button class="arrow-btn" id="right-btn" aria-label="Move right">➡️</button>
 </div>
 
 <div id="controls">
-  <button class="move-button" id="up" aria-label="Move forward">⬆️</button>
-  <button class="move-button" id="left" aria-label="Move left">⬅️</button>
-  <button class="move-button" id="down" aria-label="Move backward">⬇️</button>
-  <button class="move-button" id="right" aria-label="Move right">➡️</button>
+    <b>CONTROLS</b><br>
+    W / ⬆️ — Forward<br>
+    A / ⬅️ — Left<br>
+    S / ⬇️ — Backward<br>
+    D / ➡️ — Right<br>
+    Drag screen — Rotate camera
 </div>
 
 <script type="importmap">
 {
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
-  }
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+    }
 }
 </script>
 
 <script type="module">
 import * as THREE from "three";
 
-// ==============================
 // SCENE
-// ==============================
-
-const canvas = document.getElementById("game");
 
 const scene = new THREE.Scene();
+
 scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 45, 150);
 
 const camera = new THREE.PerspectiveCamera(
-  70,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
+    70,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    500
 );
 
 const renderer = new THREE.WebGLRenderer({
-  canvas,
-  antialias: true
+    antialias: true
 });
 
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-// ==============================
+renderer.domElement.style.position = "fixed";
+renderer.domElement.style.left = "0";
+renderer.domElement.style.top = "0";
+renderer.domElement.style.zIndex = "0";
+
+document.body.appendChild(renderer.domElement);
+
 // LIGHTING
-// ==============================
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x63784a, 2));
+scene.add(new THREE.HemisphereLight(
+    0xffffff,
+    0x526b38,
+    2
+));
 
-const sunlight = new THREE.DirectionalLight(0xffffff, 2);
-sunlight.position.set(20, 40, 15);
+const sunlight = new THREE.DirectionalLight(0xffffff, 2.5);
+
+sunlight.position.set(25, 40, 20);
+sunlight.castShadow = true;
+sunlight.shadow.mapSize.set(2048, 2048);
+sunlight.shadow.camera.left = -45;
+sunlight.shadow.camera.right = 45;
+sunlight.shadow.camera.top = 45;
+sunlight.shadow.camera.bottom = -45;
+
 scene.add(sunlight);
 
-// ==============================
 // GRASS TEXTURE
-// ==============================
 
-function createGrassTexture() {
-  const grassCanvas = document.createElement("canvas");
-  grassCanvas.width = 256;
-  grassCanvas.height = 256;
+const textureCanvas = document.createElement("canvas");
+textureCanvas.width = 256;
+textureCanvas.height = 256;
 
-  const ctx = grassCanvas.getContext("2d");
+const ctx = textureCanvas.getContext("2d");
 
-  ctx.fillStyle = "#55a832";
-  ctx.fillRect(0, 0, 256, 256);
+ctx.fillStyle = "#4caa43";
+ctx.fillRect(0, 0, 256, 256);
 
-  for (let i = 0; i < 2200; i++) {
+for (let i = 0; i < 3500; i++) {
     const x = Math.random() * 256;
     const y = Math.random() * 256;
-    const size = Math.random() * 2 + 1;
 
     const colors = [
-      "#4d9b2c",
-      "#63b83a",
-      "#438e29",
-      "#72bd43",
-      "#58a934"
+        "#58b84b",
+        "#439b38",
+        "#64bd52",
+        "#3d9135",
+        "#76c85c"
     ];
 
     ctx.fillStyle = colors[
-      Math.floor(Math.random() * colors.length)
+        Math.floor(Math.random() * colors.length)
     ];
 
-    ctx.fillRect(x, y, size, size);
-  }
-
-  const texture = new THREE.CanvasTexture(grassCanvas);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.repeat.set(12, 8);
-  texture.colorSpace = THREE.SRGBColorSpace;
-
-  return texture;
+    ctx.fillRect(x, y, 2, 3);
 }
 
-// ==============================
-// GROUND
-// ==============================
+const grassTexture = new THREE.CanvasTexture(textureCanvas);
 
-const groundGeometry = new THREE.PlaneGeometry(160, 100);
+grassTexture.wrapS = THREE.RepeatWrapping;
+grassTexture.wrapT = THREE.RepeatWrapping;
+grassTexture.repeat.set(24, 16);
+grassTexture.colorSpace = THREE.SRGBColorSpace;
 
-const groundMaterial = new THREE.MeshStandardMaterial({
-  map: createGrassTexture()
-});
+// LARGE RECTANGULAR GRASS WORLD
 
-const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-ground.rotation.x = -Math.PI / 2;
-ground.position.y = 0;
+const ground = new THREE.Mesh(
+    new THREE.BoxGeometry(160, 1, 100),
+    new THREE.MeshStandardMaterial({
+        map: grassTexture,
+        roughness: 1
+    })
+);
+
+ground.position.y = -0.5;
+ground.receiveShadow = true;
 scene.add(ground);
 
-// ==============================
-// FLOATING STONE CUBE
-// ==============================
+// STONE BLOCK CHARACTER
 
-const stoneGeometry = new THREE.BoxGeometry(2, 2, 2);
+const player = new THREE.Group();
 
-const stoneMaterial = new THREE.MeshStandardMaterial({
-  color: 0x888888,
-  roughness: 1,
-  metalness: 0
+const stone = new THREE.Mesh(
+    new THREE.BoxGeometry(1.8, 1.8, 1.8),
+    new THREE.MeshStandardMaterial({
+        color: 0x888b91,
+        roughness: 1,
+        flatShading: true
+    })
+);
+
+stone.castShadow = true;
+stone.receiveShadow = true;
+player.add(stone);
+
+// Keep the original small stone details
+
+const detailMaterial = new THREE.MeshStandardMaterial({
+    color: 0x686c72,
+    roughness: 1
 });
 
-const stone = new THREE.Mesh(stoneGeometry, stoneMaterial);
-stone.position.set(0, 3.2, 0);
-scene.add(stone);
+const detailPositions = [
+    [-0.35, 0.28, 0.91],
+    [0.38, -0.3, 0.91],
+    [0.12, 0.43, 0.91],
+    [-0.45, -0.38, 0.91]
+];
 
-// The stone stays still and does not rotate.
+for (const [x, y, z] of detailPositions) {
+    const detail = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.15, 0.035),
+        detailMaterial
+    );
 
-// ==============================
-// PLAYER MOVEMENT POSITION
-// ==============================
+    detail.position.set(x, y, z);
+    stone.add(detail);
+}
 
-// Invisible position used for movement and camera following.
-const player = new THREE.Object3D();
-player.position.set(0, 0, 9);
+player.position.set(0, 3.2, 0);
 scene.add(player);
 
-// ==============================
-// CAMERA
-// ==============================
-
-let cameraYaw = 0;
-
-const cameraDistance = 10;
-const cameraHeight = 5;
-
-const cameraTarget = new THREE.Vector3();
-const cameraPosition = new THREE.Vector3();
-
-function updateCamera() {
-  // Horizontal rotation only. The camera never tilts up or down.
-  cameraPosition.set(
-    player.position.x + Math.sin(cameraYaw) * cameraDistance,
-    player.position.y + cameraHeight,
-    player.position.z + Math.cos(cameraYaw) * cameraDistance
-  );
-
-  camera.position.copy(cameraPosition);
-
-  cameraTarget.set(
-    player.position.x,
-    player.position.y + 2,
-    player.position.z
-  );
-
-  camera.lookAt(cameraTarget);
-}
-
-updateCamera();
-
-// ==============================
-// CAMERA DRAG
-// ==============================
-
-let draggingCamera = false;
-let lastPointerX = 0;
-
-const cameraSensitivity = 0.006;
-
-canvas.addEventListener("pointerdown", (event) => {
-  draggingCamera = true;
-  lastPointerX = event.clientX;
-
-  canvas.setPointerCapture(event.pointerId);
-});
-
-canvas.addEventListener("pointermove", (event) => {
-  if (!draggingCamera) return;
-
-  const deltaX = event.clientX - lastPointerX;
-  lastPointerX = event.clientX;
-
-  // Only horizontal movement changes the camera.
-  // Vertical finger or mouse movement is ignored.
-  cameraYaw -= deltaX * cameraSensitivity;
-
-  updateCamera();
-});
-
-function stopCameraDrag() {
-  draggingCamera = false;
-}
-
-canvas.addEventListener("pointerup", stopCameraDrag);
-canvas.addEventListener("pointercancel", stopCameraDrag);
-canvas.addEventListener("lostpointercapture", stopCameraDrag);
-
-// ==============================
-// KEYBOARD CONTROLS
-// ==============================
+// MOVEMENT: WASD + ARROWS
 
 const keys = {};
 
 window.addEventListener("keydown", (event) => {
-  const key = event.key.toLowerCase();
+    const key = event.key.toLowerCase();
 
-  if (
-    ["w", "a", "s", "d", "arrowup", "arrowdown",
-     "arrowleft", "arrowright"].includes(key)
-  ) {
-    event.preventDefault();
-    keys[key] = true;
-  }
+    if ([
+        "w", "a", "s", "d",
+        "arrowup", "arrowdown",
+        "arrowleft", "arrowright"
+    ].includes(key)) {
+        event.preventDefault();
+        keys[key] = true;
+    }
 });
 
 window.addEventListener("keyup", (event) => {
-  keys[event.key.toLowerCase()] = false;
+    keys[event.key.toLowerCase()] = false;
 });
 
 window.addEventListener("blur", () => {
-  for (const key in keys) {
-    keys[key] = false;
-  }
+    for (const key in keys) {
+        keys[key] = false;
+    }
 
-  releaseAllButtons();
+    document.querySelectorAll(".arrow-btn").forEach((button) => {
+        button.classList.remove("pressed");
+    });
 });
 
-// ==============================
-// MOBILE EMOJI BUTTONS
-// ==============================
+// MOBILE DIRECTION BUTTONS
 
 const buttonKeys = {
-  up: "arrowup",
-  down: "arrowdown",
-  left: "arrowleft",
-  right: "arrowright"
+    "up-btn": "w",
+    "left-btn": "a",
+    "down-btn": "s",
+    "right-btn": "d"
 };
 
-const movementButtons = document.querySelectorAll(".move-button");
+for (const [id, key] of Object.entries(buttonKeys)) {
+    const button = document.getElementById(id);
 
-function releaseButton(button) {
-  const key = buttonKeys[button.id];
-  if (key) keys[key] = false;
+    button.addEventListener("pointerdown", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
 
-  button.classList.remove("pressed");
+        keys[key] = true;
+        button.classList.add("pressed");
+
+        try {
+            button.setPointerCapture(event.pointerId);
+        } catch {}
+    });
+
+    function releaseKey(event) {
+        event.preventDefault();
+        keys[key] = false;
+        button.classList.remove("pressed");
+    }
+
+    button.addEventListener("pointerup", releaseKey);
+    button.addEventListener("pointercancel", releaseKey);
+
+    button.addEventListener("lostpointercapture", () => {
+        keys[key] = false;
+        button.classList.remove("pressed");
+    });
+
+    button.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+    });
 }
 
-function releaseAllButtons() {
-  movementButtons.forEach(releaseButton);
+// CAMERA: HORIZONTAL ROTATION ONLY
+
+let cameraYaw = 0;
+
+const cameraDistance = 11;
+const cameraHeight = 5;
+
+let cameraDragging = false;
+let lastPointerX = 0;
+
+const cameraSensitivity = 0.005;
+
+const targetCameraPosition = new THREE.Vector3();
+const cameraLookTarget = new THREE.Vector3();
+
+function updateCamera(delta = 1) {
+    // No pitch: camera height remains fixed.
+    targetCameraPosition.set(
+        player.position.x + cameraDistance * Math.sin(cameraYaw),
+        player.position.y + cameraHeight,
+        player.position.z + cameraDistance * Math.cos(cameraYaw)
+    );
+
+    if (delta === 1) {
+        camera.position.copy(targetCameraPosition);
+    } else {
+        camera.position.lerp(
+            targetCameraPosition,
+            1 - Math.exp(-12 * delta)
+        );
+    }
+
+    cameraLookTarget.set(
+        player.position.x,
+        player.position.y,
+        player.position.z
+    );
+
+    camera.lookAt(cameraLookTarget);
 }
 
-movementButtons.forEach((button) => {
-  button.addEventListener("pointerdown", (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+updateCamera();
 
-    const key = buttonKeys[button.id];
-    if (key) keys[key] = true;
+// Mouse drag on desktop; finger drag on mobile.
+// Movement buttons are outside the canvas, so pressing them
+// never rotates the camera.
 
-    button.classList.add("pressed");
+renderer.domElement.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) {
+        return;
+    }
+
+    cameraDragging = true;
+    lastPointerX = event.clientX;
 
     try {
-      button.setPointerCapture(event.pointerId);
+        renderer.domElement.setPointerCapture(event.pointerId);
     } catch {}
-  });
-
-  button.addEventListener("pointerup", (event) => {
-    event.preventDefault();
-    releaseButton(button);
-  });
-
-  button.addEventListener("pointercancel", () => {
-    releaseButton(button);
-  });
-
-  button.addEventListener("lostpointercapture", () => {
-    releaseButton(button);
-  });
-
-  button.addEventListener("contextmenu", (event) => {
-    event.preventDefault();
-  });
 });
 
-// Avoid stuck movement keys if the pointer leaves the page.
-window.addEventListener("pointerup", () => {
-  movementButtons.forEach((button) => {
-    if (button.classList.contains("pressed")) {
-      releaseButton(button);
-    }
-  });
+renderer.domElement.addEventListener("pointermove", (event) => {
+    if (!cameraDragging) return;
+
+    const dx = event.clientX - lastPointerX;
+    lastPointerX = event.clientX;
+
+    // Only horizontal pointer movement rotates the camera.
+    cameraYaw -= dx * cameraSensitivity;
 });
 
-// ==============================
-// MOVEMENT
-// ==============================
+function stopCameraDrag() {
+    cameraDragging = false;
+}
+
+renderer.domElement.addEventListener("pointerup", stopCameraDrag);
+renderer.domElement.addEventListener("pointercancel", stopCameraDrag);
+renderer.domElement.addEventListener("lostpointercapture", stopCameraDrag);
+
+// GAME LOOP
 
 const clock = new THREE.Clock();
 
@@ -451,75 +479,79 @@ const right = new THREE.Vector3();
 const movement = new THREE.Vector3();
 
 function animate() {
-  requestAnimationFrame(animate);
+    requestAnimationFrame(animate);
 
-  const delta = Math.min(clock.getDelta(), 0.05);
-  const speed = 10 * delta;
+    const delta = Math.min(clock.getDelta(), 0.05);
+    const speed = 10 * delta;
 
-  // Movement direction follows the camera's horizontal angle.
-  forward.set(
-    -Math.sin(cameraYaw),
-    0,
-    -Math.cos(cameraYaw)
-  );
+    // Calculate movement relative to the camera's horizontal direction.
+    forward.set(
+        -Math.sin(cameraYaw),
+        0,
+        -Math.cos(cameraYaw)
+    );
 
-  right.set(
-    Math.cos(cameraYaw),
-    0,
-    -Math.sin(cameraYaw)
-  );
+    right.set(
+        Math.cos(cameraYaw),
+        0,
+        -Math.sin(cameraYaw)
+    );
 
-  movement.set(0, 0, 0);
+    movement.set(0, 0, 0);
 
-  if (keys["w"] || keys["arrowup"]) {
-    movement.add(forward);
-  }
+    if (keys["w"] || keys["arrowup"]) {
+        movement.add(forward);
+    }
 
-  if (keys["s"] || keys["arrowdown"]) {
-    movement.sub(forward);
-  }
+    if (keys["s"] || keys["arrowdown"]) {
+        movement.sub(forward);
+    }
 
-  if (keys["d"] || keys["arrowright"]) {
-    movement.add(right);
-  }
+    if (keys["a"] || keys["arrowleft"]) {
+        movement.sub(right);
+    }
 
-  if (keys["a"] || keys["arrowleft"]) {
-    movement.sub(right);
-  }
+    if (keys["d"] || keys["arrowright"]) {
+        movement.add(right);
+    }
 
-  // Diagonal movement is not faster than straight movement.
-  if (movement.lengthSq() > 0) {
-    movement.normalize();
-    player.position.addScaledVector(movement, speed);
-  }
+    // Normalize diagonal movement so it is not faster.
+    if (movement.lengthSq() > 0) {
+        movement.normalize();
+        player.position.addScaledVector(movement, speed);
+    }
 
-  // Keep movement inside the grass area.
-  player.position.x = THREE.MathUtils.clamp(
-    player.position.x, -78, 78
-  );
+    // Keep the character inside the world.
+    player.position.x = THREE.MathUtils.clamp(
+        player.position.x, -78, 78
+    );
 
-  player.position.z = THREE.MathUtils.clamp(
-    player.position.z, -48, 48
-  );
+    player.position.z = THREE.MathUtils.clamp(
+        player.position.z, -48, 48
+    );
 
-  updateCamera();
-  renderer.render(scene, camera);
+    // Keep the block floating without rotating.
+    player.position.y = 3.2;
+
+    updateCamera(delta);
+
+    renderer.render(scene, camera);
 }
 
 animate();
 
-// ==============================
 // RESIZE
-// ==============================
 
 window.addEventListener("resize", () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
 
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
 
-  updateCamera();
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 </script>
 
