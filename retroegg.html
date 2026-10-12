@@ -1,1 +1,363 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RETROegg</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #87ceeb;
+}
+
+canvas {
+    display: block;
+}
+
+#logo {
+    position: fixed;
+    top: 18px;
+    left: 22px;
+    color: white;
+    font-size: 25px;
+    font-weight: 900;
+    text-shadow: 2px 3px 4px #333;
+    z-index: 2;
+    pointer-events: none;
+}
+
+#controls {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    padding: 12px 16px;
+    color: white;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.7;
+    z-index: 2;
+    pointer-events: none;
+}
+
+#status {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    background: rgba(0, 0, 0, 0.45);
+    padding: 10px 14px;
+    border-radius: 7px;
+    font-size: 13px;
+    z-index: 2;
+}
+</style>
+</head>
+
+<body>
+
+<div id="logo">RETROegg</div>
+
+<div id="status">FLY MODE: ON</div>
+
+<div id="controls">
+    <b>CONTROLS</b><br>
+    W — Forward<br>
+    A — Left<br>
+    S — Backward<br>
+    D — Right<br>
+    <br>
+    <b>FLYING STONE</b>
+</div>
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+    }
+}
+</script>
+
+<script type="module">
+import * as THREE from "three";
+
+// =========================
+// SCENE
+// =========================
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 45, 150);
+
+const camera = new THREE.PerspectiveCamera(
+    70,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    500
+);
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+document.body.appendChild(renderer.domElement);
+
+// =========================
+// LIGHTING
+// =========================
+
+scene.add(new THREE.HemisphereLight(
+    0xffffff,
+    0x526b38,
+    2
+));
+
+const sunlight = new THREE.DirectionalLight(
+    0xffffff,
+    2.5
+);
+
+sunlight.position.set(25, 40, 20);
+sunlight.castShadow = true;
+sunlight.shadow.mapSize.set(2048, 2048);
+
+sunlight.shadow.camera.left = -45;
+sunlight.shadow.camera.right = 45;
+sunlight.shadow.camera.top = 45;
+sunlight.shadow.camera.bottom = -45;
+
+scene.add(sunlight);
+
+// =========================
+// GRASS TEXTURE
+// =========================
+
+const textureCanvas = document.createElement("canvas");
+textureCanvas.width = 256;
+textureCanvas.height = 256;
+
+const ctx = textureCanvas.getContext("2d");
+
+ctx.fillStyle = "#4caa43";
+ctx.fillRect(0, 0, 256, 256);
+
+// Small grass details
+for (let i = 0; i < 3500; i++) {
+    const x = Math.random() * 256;
+    const y = Math.random() * 256;
+
+    const colors = [
+        "#58b84b",
+        "#439b38",
+        "#64bd52",
+        "#3d9135",
+        "#76c85c"
+    ];
+
+    ctx.fillStyle = colors[
+        Math.floor(Math.random() * colors.length)
+    ];
+
+    ctx.fillRect(x, y, 2, 3);
+}
+
+const grassTexture = new THREE.CanvasTexture(textureCanvas);
+
+grassTexture.wrapS = THREE.RepeatWrapping;
+grassTexture.wrapT = THREE.RepeatWrapping;
+grassTexture.repeat.set(24, 16);
+grassTexture.colorSpace = THREE.SRGBColorSpace;
+
+// =========================
+// LARGE RECTANGULAR WORLD
+// =========================
+
+const groundGeometry = new THREE.BoxGeometry(160, 1, 100);
+
+const groundMaterial = new THREE.MeshStandardMaterial({
+    map: grassTexture,
+    roughness: 1
+});
+
+const ground = new THREE.Mesh(
+    groundGeometry,
+    groundMaterial
+);
+
+ground.position.y = -0.5;
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+// Ground top is at y = 0.
+
+// =========================
+// STONE BLOCK CHARACTER
+// =========================
+
+const player = new THREE.Group();
+
+const stoneGeometry = new THREE.BoxGeometry(1.8, 1.8, 1.8);
+
+const stoneMaterial = new THREE.MeshStandardMaterial({
+    color: 0x888b91,
+    roughness: 1,
+    flatShading: true
+});
+
+const stone = new THREE.Mesh(
+    stoneGeometry,
+    stoneMaterial
+);
+
+stone.castShadow = true;
+stone.receiveShadow = true;
+
+player.add(stone);
+
+// Small stone details
+const detailMaterial = new THREE.MeshStandardMaterial({
+    color: 0x686c72,
+    roughness: 1
+});
+
+const detailPositions = [
+    [-0.35, 0.28, 0.91],
+    [0.38, -0.3, 0.91],
+    [0.12, 0.43, 0.91],
+    [-0.45, -0.38, 0.91]
+];
+
+for (const [x, y, z] of detailPositions) {
+    const detail = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.15, 0.035),
+        detailMaterial
+    );
+
+    detail.position.set(x, y, z);
+    stone.add(detail);
+}
+
+// Always floating above the ground!
+player.position.set(0, 3.2, 0);
+
+scene.add(player);
+
+// =========================
+// MOVEMENT
+// =========================
+
+const keys = {};
+
+window.addEventListener("keydown", (event) => {
+    const key = event.key.toLowerCase();
+
+    if (["w", "a", "s", "d", " "].includes(key)) {
+        event.preventDefault();
+    }
+
+    keys[key] = true;
+});
+
+window.addEventListener("keyup", (event) => {
+    keys[event.key.toLowerCase()] = false;
+});
+
+window.addEventListener("blur", () => {
+    for (const key in keys) {
+        keys[key] = false;
+    }
+});
+
+// =========================
+// CAMERA
+// =========================
+
+camera.position.set(0, 8, 12);
+camera.lookAt(player.position);
+
+// =========================
+// GAME LOOP
+// =========================
+
+const clock = new THREE.Clock();
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const delta = Math.min(clock.getDelta(), 0.05);
+    const speed = 10 * delta;
+
+    // WASD movement on the grass world
+    if (keys["w"]) player.position.z -= speed;
+    if (keys["s"]) player.position.z += speed;
+    if (keys["a"]) player.position.x -= speed;
+    if (keys["d"]) player.position.x += speed;
+
+    // Keep the player inside the rectangular world
+    player.position.x = THREE.MathUtils.clamp(
+        player.position.x, -78, 78
+    );
+
+    player.position.z = THREE.MathUtils.clamp(
+        player.position.z, -48, 48
+    );
+
+    // Constant floating height: never touches the ground
+    player.position.y = 3.2;
+
+    // Slight floating-block rotation
+    stone.rotation.y += delta * 0.35;
+
+    // Follow the player
+    const targetCameraPosition = new THREE.Vector3(
+        player.position.x,
+        player.position.y + 5,
+        player.position.z + 11
+    );
+
+    camera.position.lerp(targetCameraPosition, 5 * delta);
+
+    camera.lookAt(
+        player.position.x,
+        player.position.y,
+        player.position.z
+    );
+
+    renderer.render(scene, camera);
+}
+
+animate();
+
+// =========================
+// RESIZE
+// =========================
+
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+});
+</script>
+
+</body>
+</html>
+
