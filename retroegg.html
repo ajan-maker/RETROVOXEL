@@ -370,7 +370,7 @@ const eggSpawnPosition = new THREE.Vector3(1.1, 3.2, 1.1);
 let eggCollected = false;
 let timerStarted = false;
 let timerFinished = false;
-let timerRemaining = 5;
+let timerRemaining = 10;
 let timerAccumulator = 0;
 
 function checkEggTouch() {
@@ -386,7 +386,7 @@ function checkEggTouch() {
 
         // Start the countdown as soon as it arrives.
         timerStarted = true;
-        timerRemaining = 5;
+        timerRemaining = 10;
         timerAccumulator = 0;
 
         timerLabel.visible = true;
