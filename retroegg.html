@@ -7,131 +7,179 @@
 <title>RETROegg</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html, body {
-    margin: 0;
     width: 100%;
     height: 100%;
+    margin: 0;
     overflow: hidden;
     font-family: Arial, sans-serif;
     background: #87ceeb;
     touch-action: none;
 }
 
-canvas {
-    display: block;
+body { position: relative; }
+canvas { display: block; }
+
+#logo {
+    position: fixed;
+    top: 18px;
+    left: 22px;
+    color: white;
+    font-size: 25px;
+    font-weight: 900;
+    text-shadow: 2px 3px 4px #333;
+    z-index: 2;
+    pointer-events: none;
 }
 
 #egg-message {
+    display: none;
     position: fixed;
     top: 35px;
     left: 50%;
     transform: translateX(-50%);
     color: white;
-    font-size: 28px;
+    font-size: 26px;
     font-weight: bold;
     text-shadow: 2px 2px 4px black;
-    display: none;
     z-index: 20;
     pointer-events: none;
+    white-space: nowrap;
 }
 
 #mobile-controls {
     position: fixed;
-    bottom: 22px;
-    left: 20px;
+    left: 18px;
+    bottom: 18px;
     display: grid;
-    grid-template-columns: 55px 55px 55px;
-    grid-template-rows: 55px 55px;
+    grid-template-columns: 54px 54px 54px;
+    grid-template-rows: 54px 54px;
     gap: 5px;
     z-index: 10;
     user-select: none;
-}
-
-.control {
-    width: 55px;
-    height: 55px;
-    border: 2px solid rgba(255,255,255,0.65);
-    border-radius: 12px;
-    background: rgba(40,40,40,0.55);
-    color: white;
-    font-size: 24px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    -webkit-user-select: none;
     touch-action: none;
-    user-select: none;
 }
 
-#up {
-    grid-column: 2;
-    grid-row: 1;
-}
-
-#left {
-    grid-column: 1;
-    grid-row: 2;
-}
-
-#down {
-    grid-column: 2;
-    grid-row: 2;
-}
-
-#right {
-    grid-column: 3;
-    grid-row: 2;
-}
-
-#look-help {
-    position: fixed;
-    right: 12px;
-    bottom: 15px;
+.arrow-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(35, 40, 35, 0.82);
     color: white;
-    font-size: 12px;
-    text-shadow: 1px 1px 3px black;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    border-radius: 12px;
+    font-size: 27px;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    padding: 0;
+    outline: none;
+}
+
+.arrow-btn:active,
+.arrow-btn.pressed {
+    background: #27ae60;
+    transform: scale(0.94);
+}
+
+#up-btn { grid-column: 2; grid-row: 1; }
+#left-btn { grid-column: 1; grid-row: 2; }
+#down-btn { grid-column: 2; grid-row: 2; }
+#right-btn { grid-column: 3; grid-row: 2; }
+
+#controls {
+    position: fixed;
+    left: 20px;
+    bottom: 150px;
+    padding: 12px 16px;
+    color: white;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.7;
+    z-index: 2;
     pointer-events: none;
 }
-</style>
 
-<script type="importmap">
-{
-  "imports": {
-    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
-  }
+@media (max-width: 600px) {
+    #mobile-controls {
+        left: 12px;
+        bottom: 12px;
+        grid-template-columns: 48px 48px 48px;
+        grid-template-rows: 48px 48px;
+        gap: 4px;
+    }
+
+    .arrow-btn {
+        font-size: 25px;
+        border-radius: 10px;
+    }
+
+    #controls {
+        left: 12px;
+        bottom: 118px;
+        font-size: 11px;
+        padding: 7px 10px;
+    }
+
+    #logo {
+        top: 12px;
+        left: 12px;
+        font-size: 21px;
+    }
+
+    #egg-message {
+        top: 18px;
+        font-size: 20px;
+    }
 }
-</script>
+</style>
 </head>
 
 <body>
 
+<div id="logo">RETROegg</div>
 <div id="egg-message">...</div>
 
 <div id="mobile-controls">
-    <div class="control" id="up">▲</div>
-    <div class="control" id="left">◀</div>
-    <div class="control" id="down">▼</div>
-    <div class="control" id="right">▶</div>
+    <button class="arrow-btn" id="up-btn">⬆️</button>
+    <button class="arrow-btn" id="left-btn">⬅️</button>
+    <button class="arrow-btn" id="down-btn">⬇️</button>
+    <button class="arrow-btn" id="right-btn">➡️</button>
 </div>
 
-<div id="look-help">Drag to look around</div>
+<div id="controls">
+    <b>CONTROLS</b><br>
+    W / ⬆️ — Forward<br>
+    A / ⬅️ — Left<br>
+    S / ⬇️ — Backward<br>
+    D / ➡️ — Right<br>
+    Drag screen — Rotate camera
+</div>
+
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+    }
+}
+</script>
 
 <script type="module">
 import * as THREE from "three";
 
-/* =========================
-   SCENE
-========================= */
+// SCENE
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x87ceeb);
-scene.fog = new THREE.Fog(0x87ceeb, 80, 190);
+scene.fog = new THREE.Fog(0x87ceeb, 45, 150);
 
 const camera = new THREE.PerspectiveCamera(
-    75,
+    70,
     window.innerWidth / window.innerHeight,
     0.1,
     500
@@ -140,390 +188,507 @@ const camera = new THREE.PerspectiveCamera(
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+renderer.domElement.style.position = "fixed";
+renderer.domElement.style.left = "0";
+renderer.domElement.style.top = "0";
+renderer.domElement.style.zIndex = "0";
+
 document.body.appendChild(renderer.domElement);
 
-/* =========================
-   LIGHTING
-========================= */
+// LIGHTING
 
-scene.add(new THREE.HemisphereLight(0xffffff, 0x63704a, 2));
+scene.add(new THREE.HemisphereLight(0xffffff, 0x526b38, 2));
 
-const sunlight = new THREE.DirectionalLight(0xffffff, 2);
-sunlight.position.set(30, 60, 20);
+const sunlight = new THREE.DirectionalLight(0xffffff, 2.5);
+sunlight.position.set(25, 40, 20);
+sunlight.castShadow = true;
+sunlight.shadow.mapSize.set(2048, 2048);
+sunlight.shadow.camera.left = -45;
+sunlight.shadow.camera.right = 45;
+sunlight.shadow.camera.top = 45;
+sunlight.shadow.camera.bottom = -45;
 scene.add(sunlight);
 
-/* =========================
-   GROUND
-========================= */
+// GRASS TEXTURE — ORIGINAL
 
-const groundGeometry = new THREE.BoxGeometry(160, 1, 100);
-const groundMaterial = new THREE.MeshStandardMaterial({
-    color: 0x48a83f
-});
+const textureCanvas = document.createElement("canvas");
+textureCanvas.width = 256;
+textureCanvas.height = 256;
 
-const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-ground.position.set(0, -0.5, 0);
-scene.add(ground);
+const ctx = textureCanvas.getContext("2d");
+ctx.fillStyle = "#4caa43";
+ctx.fillRect(0, 0, 256, 256);
 
-/* =========================
-   PLAYER
-========================= */
+for (let i = 0; i < 3500; i++) {
+    const x = Math.random() * 256;
+    const y = Math.random() * 256;
 
-const playerGeometry = new THREE.BoxGeometry(1.8, 1.8, 1.8);
-const playerMaterial = new THREE.MeshStandardMaterial({
-    color: 0x888888
-});
+    const colors = [
+        "#58b84b",
+        "#439b38",
+        "#64bd52",
+        "#3d9135",
+        "#76c85c"
+    ];
 
-const player = new THREE.Mesh(playerGeometry, playerMaterial);
-player.position.set(0, 3.2, 0);
-scene.add(player);
+    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+    ctx.fillRect(x, y, 2, 3);
+}
 
-/* =========================
-   SPAWN DIRT BLOCK
-========================= */
+const grassTexture = new THREE.CanvasTexture(textureCanvas);
+grassTexture.wrapS = THREE.RepeatWrapping;
+grassTexture.wrapT = THREE.RepeatWrapping;
+grassTexture.repeat.set(24, 16);
+grassTexture.colorSpace = THREE.SRGBColorSpace;
 
-const spawnBlockGeometry = new THREE.BoxGeometry(4, 0.45, 4);
-const spawnBlockMaterial = new THREE.MeshStandardMaterial({
-    color: 0x79502b
-});
+// WORLD
 
-const spawnBlock = new THREE.Mesh(
-    spawnBlockGeometry,
-    spawnBlockMaterial
-);
-
-spawnBlock.position.set(0, 0.225, 0);
-scene.add(spawnBlock);
-
-/* =========================
-   UPGRADE SIGN
-   Moved a little in front of
-   the spawn dirt block.
-========================= */
-
-const sign = new THREE.Group();
-sign.position.set(0, 0, -4.5);
-scene.add(sign);
-
-/* Sign support posts */
-
-const postMaterial = new THREE.MeshStandardMaterial({
-    color: 0x79502b
-});
-
-const postGeometry = new THREE.BoxGeometry(0.22, 2.7, 0.22);
-
-const leftPost = new THREE.Mesh(postGeometry, postMaterial);
-leftPost.position.set(-1.15, 1.35, 0);
-sign.add(leftPost);
-
-const rightPost = new THREE.Mesh(postGeometry, postMaterial);
-rightPost.position.set(1.15, 1.35, 0);
-sign.add(rightPost);
-
-/* Sign board */
-
-const boardGeometry = new THREE.BoxGeometry(3.4, 2.15, 0.22);
-const boardMaterial = new THREE.MeshStandardMaterial({
-    color: 0x9b7045
-});
-
-const board = new THREE.Mesh(boardGeometry, boardMaterial);
-board.position.set(0, 2.6, 0);
-sign.add(board);
-
-/* Sign text texture */
-
-const signCanvas = document.createElement("canvas");
-signCanvas.width = 512;
-signCanvas.height = 320;
-
-const signContext = signCanvas.getContext("2d");
-
-signContext.clearRect(0, 0, 512, 320);
-signContext.textAlign = "center";
-signContext.textBaseline = "middle";
-
-signContext.font = "bold 76px Arial";
-signContext.fillStyle = "#ffffff";
-signContext.fillText("UPGRADE", 256, 95);
-
-signContext.font = "bold 88px Arial";
-signContext.fillStyle = "#00ff38";
-signContext.fillText("05.00", 256, 220);
-
-const signTexture = new THREE.CanvasTexture(signCanvas);
-
-const signTextMaterial = new THREE.MeshBasicMaterial({
-    map: signTexture,
-    transparent: true,
-    side: THREE.DoubleSide
-});
-
-const signText = new THREE.Mesh(
-    new THREE.PlaneGeometry(3.25, 2.03),
-    signTextMaterial
-);
-
-signText.position.set(0, 2.6, 0.116);
-sign.add(signText);
-
-/* =========================
-   EGG DIRT BLOCK
-========================= */
-
-const eggDirtGeometry = new THREE.BoxGeometry(2.2, 0.45, 2.2);
-const eggDirtMaterial = new THREE.MeshStandardMaterial({
-    color: 0x9b7045
-});
-
-const eggDirt = new THREE.Mesh(
-    eggDirtGeometry,
-    eggDirtMaterial
-);
-
-eggDirt.position.set(72, 0.225, 42);
-scene.add(eggDirt);
-
-/* =========================
-   EGG
-========================= */
-
-const egg = new THREE.Mesh(
-    new THREE.SphereGeometry(0.85, 32, 32),
+const ground = new THREE.Mesh(
+    new THREE.BoxGeometry(160, 1, 100),
     new THREE.MeshStandardMaterial({
-        color: 0xfff4d6,
-        roughness: 0.35
+        map: grassTexture,
+        roughness: 1
     })
 );
 
-egg.scale.set(0.72, 1, 0.72);
+ground.position.y = -0.5;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// SPAWN BASE — 4x4 DIRT
+
+const dirt = new THREE.Mesh(
+    new THREE.BoxGeometry(4, 0.45, 4),
+    new THREE.MeshStandardMaterial({
+        color: 0x79502b,
+        roughness: 1,
+        flatShading: true
+    })
+);
+
+dirt.position.set(0, 0.225, 0);
+dirt.castShadow = true;
+dirt.receiveShadow = true;
+scene.add(dirt);
+
+// PLAYER
+
+const player = new THREE.Group();
+
+const stone = new THREE.Mesh(
+    new THREE.BoxGeometry(1.8, 1.8, 1.8),
+    new THREE.MeshStandardMaterial({
+        color: 0x888b91,
+        roughness: 1,
+        flatShading: true
+    })
+);
+
+stone.castShadow = true;
+stone.receiveShadow = true;
+player.add(stone);
+
+player.position.set(0, 3.2, 0);
+scene.add(player);
+
+// UPGRADE SIGN — NO POSTS
+
+const sign = new THREE.Group();
+scene.add(sign);
+
+const signMaterial = new THREE.MeshStandardMaterial({
+    color: 0x9b7045,
+    roughness: 0.85
+});
+
+const signBoard = new THREE.Mesh(
+    new THREE.BoxGeometry(3.4, 2.15, 0.22),
+    signMaterial
+);
+
+signBoard.castShadow = true;
+signBoard.receiveShadow = true;
+sign.add(signBoard);
+
+// Sign text texture
+
+const signCanvas = document.createElement("canvas");
+signCanvas.width = 680;
+signCanvas.height = 430;
+
+const signContext = signCanvas.getContext("2d");
+
+function drawSign() {
+    signContext.clearRect(0, 0, 680, 430);
+
+    signContext.fillStyle = "#9b7045";
+    signContext.fillRect(0, 0, 680, 430);
+
+    // White UPGRADE text
+    signContext.fillStyle = "#ffffff";
+    signContext.font = "bold 78px Arial";
+    signContext.textAlign = "center";
+    signContext.textBaseline = "middle";
+    signContext.fillText("UPGRADE", 340, 105);
+
+    // Green 05.00 text
+    signContext.fillStyle = "#00ff45";
+    signContext.font = "bold 86px Arial";
+    signContext.fillText("05.00", 340, 300);
+}
+
+drawSign();
+
+const signTexture = new THREE.CanvasTexture(signCanvas);
+signTexture.colorSpace = THREE.SRGBColorSpace;
+signTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+const signFace = new THREE.Mesh(
+    new THREE.PlaneGeometry(3.3, 2.08),
+    new THREE.MeshBasicMaterial({
+        map: signTexture,
+        side: THREE.DoubleSide
+    })
+);
+
+signFace.position.z = 0.116;
+sign.add(signFace);
+
+// Move sign in front of the spawn dirt.
+// No posts are added.
+sign.position.set(0, 2.6, -4.5);
+
+// EGG DIRT
+
+const eggDirt = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 0.45, 2.2),
+    new THREE.MeshStandardMaterial({
+        color: 0x9b7045,
+        roughness: 1,
+        flatShading: true
+    })
+);
+
+eggDirt.position.set(72, 0.225, 42);
+eggDirt.castShadow = true;
+eggDirt.receiveShadow = true;
+scene.add(eggDirt);
+
+// EGG
+
+const egg = new THREE.Group();
+
+const eggMaterial = new THREE.MeshStandardMaterial({
+    color: 0xfff4d6,
+    roughness: 0.35,
+    metalness: 0.02
+});
+
+const eggShell = new THREE.Mesh(
+    new THREE.SphereGeometry(0.85, 32, 24),
+    eggMaterial
+);
+
+eggShell.scale.set(0.72, 1, 0.72);
+eggShell.castShadow = true;
+eggShell.receiveShadow = true;
+egg.add(eggShell);
+
 egg.position.set(72, 3.2, 42);
 scene.add(egg);
 
+// EGG TIMER LABEL
+
+const timerCanvas = document.createElement("canvas");
+timerCanvas.width = 512;
+timerCanvas.height = 256;
+
+const timerContext = timerCanvas.getContext("2d");
+const timerTexture = new THREE.CanvasTexture(timerCanvas);
+timerTexture.colorSpace = THREE.SRGBColorSpace;
+
+const timerMaterial = new THREE.SpriteMaterial({
+    map: timerTexture,
+    transparent: true,
+    depthTest: false
+});
+
+const timerLabel = new THREE.Sprite(timerMaterial);
+timerLabel.scale.set(2.4, 1.2, 1);
+timerLabel.visible = false;
+timerLabel.renderOrder = 10;
+scene.add(timerLabel);
+
+function drawTimer(seconds) {
+    timerContext.clearRect(0, 0, 512, 256);
+
+    timerContext.fillStyle = "rgba(20,20,20,0.85)";
+    timerContext.beginPath();
+    timerContext.roundRect(48, 42, 416, 172, 32);
+    timerContext.fill();
+
+    timerContext.strokeStyle = "#ffffff";
+    timerContext.lineWidth = 8;
+    timerContext.stroke();
+
+    const timeText = "00:" + String(seconds).padStart(2, "0");
+
+    timerContext.fillStyle = "#ffffff";
+    timerContext.font = "bold 100px Arial";
+    timerContext.textAlign = "center";
+    timerContext.textBaseline = "middle";
+    timerContext.fillText(timeText, 256, 130);
+
+    timerTexture.needsUpdate = true;
+}
+
+// EGG TOUCH + 10-SECOND TIMER
+
+const eggSpawnPosition = new THREE.Vector3(1.1, 3.2, 1.1);
+
 let eggCollected = false;
-let eggTimerStarted = false;
-let eggTimer = 10;
-let lastTimerSecond = 0;
-let timerSprite = null;
+let timerStarted = false;
+let timerFinished = false;
+let timerRemaining = 10;
+let timerAccumulator = 0;
 
-/* =========================
-   EGG TIMER
-========================= */
+function checkEggTouch() {
+    if (eggCollected) return;
 
-function createTimerSprite() {
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 100;
+    const distance = player.position.distanceTo(egg.position);
 
-    const ctx = canvas.getContext("2d");
+    if (distance < 2.2) {
+        eggCollected = true;
+        egg.position.copy(eggSpawnPosition);
 
-    ctx.fillStyle = "rgba(0,0,0,0.65)";
-    ctx.fillRect(8, 8, 240, 84);
+        timerStarted = true;
+        timerRemaining = 10;
+        timerAccumulator = 0;
 
-    ctx.font = "bold 58px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText("00:10", 128, 52);
-
-    const texture = new THREE.CanvasTexture(canvas);
-
-    const material = new THREE.SpriteMaterial({
-        map: texture,
-        transparent: true
-    });
-
-    const sprite = new THREE.Sprite(material);
-    sprite.scale.set(3.1, 1.2, 1);
-    return sprite;
+        timerLabel.visible = true;
+        drawTimer(timerRemaining);
+    }
 }
 
-function updateTimerSprite(value) {
-    if (!timerSprite) return;
+function updateEggTimer(delta) {
+    if (!timerStarted || timerFinished) return;
 
-    const canvas = document.createElement("canvas");
-    canvas.width = 256;
-    canvas.height = 100;
+    timerAccumulator += delta;
 
-    const ctx = canvas.getContext("2d");
+    while (timerAccumulator >= 1 && timerRemaining > 0) {
+        timerAccumulator -= 1;
+        timerRemaining--;
+        drawTimer(timerRemaining);
+    }
 
-    ctx.fillStyle = "rgba(0,0,0,0.65)";
-    ctx.fillRect(8, 8, 240, 84);
+    if (timerRemaining <= 0) {
+        timerRemaining = 0;
+        timerFinished = true;
 
-    ctx.font = "bold 58px Arial";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillStyle = "#ffffff";
-    ctx.fillText("00:" + String(value).padStart(2, "0"), 128, 52);
+        drawTimer(0);
 
-    const newTexture = new THREE.CanvasTexture(canvas);
-    timerSprite.material.map.dispose();
-    timerSprite.material.map = newTexture;
-    timerSprite.material.needsUpdate = true;
+        eggMaterial.color.set(0x808080);
+        eggMaterial.roughness = 0.9;
+        eggMaterial.metalness = 0;
+    }
 }
 
-/* =========================
-   MOVEMENT
-========================= */
+// MOVEMENT
 
-const keys = {
-    forward: false,
-    backward: false,
-    left: false,
-    right: false
-};
+const keys = {};
 
 window.addEventListener("keydown", (event) => {
-    switch (event.key.toLowerCase()) {
-        case "w":
-        case "arrowup":
-            keys.forward = true;
-            break;
-        case "s":
-        case "arrowdown":
-            keys.backward = true;
-            break;
-        case "a":
-        case "arrowleft":
-            keys.left = true;
-            break;
-        case "d":
-        case "arrowright":
-            keys.right = true;
-            break;
+    const key = event.key.toLowerCase();
+
+    if ([
+        "w", "a", "s", "d",
+        "arrowup", "arrowdown",
+        "arrowleft", "arrowright"
+    ].includes(key)) {
+        event.preventDefault();
+        keys[key] = true;
     }
 });
 
 window.addEventListener("keyup", (event) => {
-    switch (event.key.toLowerCase()) {
-        case "w":
-        case "arrowup":
-            keys.forward = false;
-            break;
-        case "s":
-        case "arrowdown":
-            keys.backward = false;
-            break;
-        case "a":
-        case "arrowleft":
-            keys.left = false;
-            break;
-        case "d":
-        case "arrowright":
-            keys.right = false;
-            break;
-    }
+    keys[event.key.toLowerCase()] = false;
 });
 
-/* Mobile controls */
+window.addEventListener("blur", () => {
+    for (const key in keys) keys[key] = false;
 
-function setupMobileButton(id, keyName) {
+    document.querySelectorAll(".arrow-btn").forEach(button => {
+        button.classList.remove("pressed");
+    });
+});
+
+// MOBILE CONTROLS
+
+const buttonKeys = {
+    "up-btn": "w",
+    "left-btn": "a",
+    "down-btn": "s",
+    "right-btn": "d"
+};
+
+for (const [id, key] of Object.entries(buttonKeys)) {
     const button = document.getElementById(id);
 
-    const start = (event) => {
+    button.addEventListener("pointerdown", (event) => {
         event.preventDefault();
-        keys[keyName] = true;
-    };
+        event.stopPropagation();
 
-    const stop = (event) => {
+        keys[key] = true;
+        button.classList.add("pressed");
+
+        try {
+            button.setPointerCapture(event.pointerId);
+        } catch {}
+    });
+
+    function releaseKey(event) {
         event.preventDefault();
-        keys[keyName] = false;
-    };
+        keys[key] = false;
+        button.classList.remove("pressed");
+    }
 
-    button.addEventListener("pointerdown", start);
-    button.addEventListener("pointerup", stop);
-    button.addEventListener("pointercancel", stop);
-    button.addEventListener("pointerleave", stop);
+    button.addEventListener("pointerup", releaseKey);
+    button.addEventListener("pointercancel", releaseKey);
+
+    button.addEventListener("lostpointercapture", () => {
+        keys[key] = false;
+        button.classList.remove("pressed");
+    });
+
+    button.addEventListener("contextmenu", event => {
+        event.preventDefault();
+    });
 }
 
-setupMobileButton("up", "forward");
-setupMobileButton("down", "backward");
-setupMobileButton("left", "left");
-setupMobileButton("right", "right");
-
-/* =========================
-   CAMERA LOOK
-========================= */
+// CAMERA
 
 let cameraYaw = 0;
-let cameraPitch = 0.22;
+const cameraDistance = 11;
+const cameraHeight = 5;
 
-let dragging = false;
+let cameraDragging = false;
 let lastPointerX = 0;
-let lastPointerY = 0;
+const cameraSensitivity = 0.005;
 
-renderer.domElement.addEventListener("pointerdown", (event) => {
-    dragging = true;
-    lastPointerX = event.clientX;
-    lastPointerY = event.clientY;
-});
+const targetCameraPosition = new THREE.Vector3();
+const cameraLookTarget = new THREE.Vector3();
 
-window.addEventListener("pointerup", () => {
-    dragging = false;
-});
-
-window.addEventListener("pointermove", (event) => {
-    if (!dragging) return;
-
-    const deltaX = event.clientX - lastPointerX;
-    const deltaY = event.clientY - lastPointerY;
-
-    cameraYaw -= deltaX * 0.005;
-    cameraPitch -= deltaY * 0.003;
-
-    cameraPitch = THREE.MathUtils.clamp(
-        cameraPitch,
-        -0.35,
-        0.8
+function updateCamera(delta = 1) {
+    targetCameraPosition.set(
+        player.position.x + cameraDistance * Math.sin(cameraYaw),
+        player.position.y + cameraHeight,
+        player.position.z + cameraDistance * Math.cos(cameraYaw)
     );
 
+    if (delta === 1) {
+        camera.position.copy(targetCameraPosition);
+    } else {
+        camera.position.lerp(
+            targetCameraPosition,
+            1 - Math.exp(-12 * delta)
+        );
+    }
+
+    cameraLookTarget.set(
+        player.position.x,
+        player.position.y,
+        player.position.z
+    );
+
+    camera.lookAt(cameraLookTarget);
+}
+
+updateCamera();
+
+// CAMERA DRAG
+
+renderer.domElement.addEventListener("pointerdown", (event) => {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+
+    cameraDragging = true;
     lastPointerX = event.clientX;
-    lastPointerY = event.clientY;
+
+    try {
+        renderer.domElement.setPointerCapture(event.pointerId);
+    } catch {}
 });
 
-/* =========================
-   MAIN LOOP
-========================= */
+renderer.domElement.addEventListener("pointermove", (event) => {
+    if (!cameraDragging) return;
+
+    const dx = event.clientX - lastPointerX;
+    lastPointerX = event.clientX;
+    cameraYaw -= dx * cameraSensitivity;
+});
+
+function stopCameraDrag() {
+    cameraDragging = false;
+}
+
+renderer.domElement.addEventListener("pointerup", stopCameraDrag);
+renderer.domElement.addEventListener("pointercancel", stopCameraDrag);
+renderer.domElement.addEventListener("lostpointercapture", stopCameraDrag);
+
+// GAME LOOP
 
 const clock = new THREE.Clock();
+const forward = new THREE.Vector3();
+const right = new THREE.Vector3();
+const movement = new THREE.Vector3();
+
 const eggMessage = document.getElementById("egg-message");
 
 function animate() {
     requestAnimationFrame(animate);
 
     const delta = Math.min(clock.getDelta(), 0.05);
+    const speed = 10 * delta;
 
-    /* Player movement */
+    // Spin egg
+    egg.rotation.y += 1.5 * delta;
 
-    const moveSpeed = 8 * delta;
+    // Keep timer above egg
+    timerLabel.position.set(
+        egg.position.x,
+        egg.position.y + 1.65,
+        egg.position.z
+    );
 
-    const forwardX = -Math.sin(cameraYaw);
-    const forwardZ = -Math.cos(cameraYaw);
+    // Move relative to camera direction
+    forward.set(
+        -Math.sin(cameraYaw),
+        0,
+        -Math.cos(cameraYaw)
+    );
 
-    const rightX = Math.cos(cameraYaw);
-    const rightZ = -Math.sin(cameraYaw);
+    right.set(
+        Math.cos(cameraYaw),
+        0,
+        -Math.sin(cameraYaw)
+    );
 
-    if (keys.forward) {
-        player.position.x += forwardX * moveSpeed;
-        player.position.z += forwardZ * moveSpeed;
+    movement.set(0, 0, 0);
+
+    if (keys["w"] || keys["arrowup"]) movement.add(forward);
+    if (keys["s"] || keys["arrowdown"]) movement.sub(forward);
+    if (keys["a"] || keys["arrowleft"]) movement.sub(right);
+    if (keys["d"] || keys["arrowright"]) movement.add(right);
+
+    if (movement.lengthSq() > 0) {
+        movement.normalize();
+        player.position.addScaledVector(movement, speed);
     }
 
-    if (keys.backward) {
-        player.position.x -= forwardX * moveSpeed;
-        player.position.z -= forwardZ * moveSpeed;
-    }
-
-    if (keys.left) {
-        player.position.x -= rightX * moveSpeed;
-        player.position.z -= rightZ * moveSpeed;
-    }
-
-    if (keys.right) {
-        player.position.x += rightX * moveSpeed;
-        player.position.z += rightZ * moveSpeed;
-    }
-
+    // World boundaries
     player.position.x = THREE.MathUtils.clamp(
         player.position.x, -78, 78
     );
@@ -532,73 +697,15 @@ function animate() {
         player.position.z, -48, 48
     );
 
-    /* Camera follows player */
+    player.position.y = 3.2;
 
-    const cameraDistance = 8;
+    // Detect touching egg
+    checkEggTouch();
 
-    camera.position.x =
-        player.position.x + Math.sin(cameraYaw) * cameraDistance;
+    // Update countdown
+    updateEggTimer(delta);
 
-    camera.position.z =
-        player.position.z + Math.cos(cameraYaw) * cameraDistance;
-
-    camera.position.y =
-        player.position.y + 3 + cameraPitch * 5;
-
-    camera.lookAt(
-        player.position.x,
-        player.position.y + 0.5,
-        player.position.z
-    );
-
-    /* Egg rotation */
-
-    if (!eggCollected) {
-        egg.rotation.y += 1.5 * delta;
-    }
-
-    /* Collect egg by touching it */
-
-    if (!eggCollected) {
-        const distanceToEgg = player.position.distanceTo(egg.position);
-
-        if (distanceToEgg < 2.2) {
-            eggCollected = true;
-
-            egg.position.set(1.1, 3.2, 1.1);
-            egg.rotation.set(0, 0, 0);
-
-            timerSprite = createTimerSprite();
-            timerSprite.position.set(1.1, 5.0, 1.1);
-            scene.add(timerSprite);
-
-            eggTimerStarted = true;
-            eggTimer = 10;
-            lastTimerSecond = 0;
-            updateTimerSprite(eggTimer);
-        }
-    }
-
-    /* Egg timer countdown */
-
-    if (eggTimerStarted && eggTimer > 0) {
-        lastTimerSecond += delta;
-
-        if (lastTimerSecond >= 1) {
-            lastTimerSecond -= 1;
-            eggTimer--;
-
-            updateTimerSprite(eggTimer);
-
-            if (eggTimer <= 0) {
-                egg.material.color.set(0x808080);
-                egg.material.needsUpdate = true;
-            }
-        }
-    }
-
-    /* Show ... near the sign */
-
+    // Show ... when approaching the sign
     const signDistance = Math.hypot(
         player.position.x - sign.position.x,
         player.position.z - sign.position.z
@@ -607,25 +714,23 @@ function animate() {
     eggMessage.style.display =
         signDistance < 3.5 ? "block" : "none";
 
+    updateCamera(delta);
     renderer.render(scene, camera);
 }
 
 animate();
 
-/* =========================
-   WINDOW RESIZE
-========================= */
+// RESIZE
 
 window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
 
-    renderer.setSize(
-        window.innerWidth,
-        window.innerHeight
-    );
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 });
 </script>
 
 </body>
+</html>
 </html>
