@@ -27,7 +27,7 @@ body {
     letter-spacing: 1px;
 }
 
-/* TOP GEMS */
+/* GEMS DISPLAY */
 
 .gems-container {
     position: absolute;
@@ -42,7 +42,7 @@ body {
     display: flex;
     align-items: center;
     gap: 12px;
-    background: #111;
+    background: #111111;
     padding: 7px 12px;
     border-radius: 6px;
     min-height: 40px;
@@ -59,12 +59,17 @@ body {
         #087d29 100%
     );
     clip-path: polygon(
-        25% 0%, 75% 0%, 100% 35%,
-        50% 100%, 0% 35%
+        25% 0%,
+        75% 0%,
+        100% 35%,
+        50% 100%,
+        0% 35%
     );
     filter: drop-shadow(0 0 4px #27ae60);
     position: relative;
 }
+
+/* Crystal shine */
 
 .gem-icon::after {
     content: "";
@@ -73,7 +78,7 @@ body {
     left: 6px;
     width: 7px;
     height: 15px;
-    background: rgba(255,255,255,0.55);
+    background: rgba(255, 255, 255, 0.55);
     clip-path: polygon(0 0, 100% 0, 100% 100%);
 }
 
@@ -98,6 +103,7 @@ body {
     font-weight: bold;
     cursor: pointer;
     transition: background 0.2s, transform 0.2s;
+    padding: 0;
 }
 
 .gem-plus:hover {
@@ -105,7 +111,11 @@ body {
     transform: scale(1.08);
 }
 
-/* CENTER GAME BUTTON */
+.gem-plus:active {
+    transform: scale(0.95);
+}
+
+/* CENTER BUTTON */
 
 .center {
     position: absolute;
@@ -129,112 +139,6 @@ body {
 .retro-button:hover {
     background: #219150;
     transform: scale(1.05);
-}
-
-/* GEMS SHOP OVERLAY */
-
-.shop-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.35);
-    z-index: 10;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
-
-.shop-window {
-    position: relative;
-    width: 520px;
-    max-width: 100%;
-    background: #080808;
-    color: white;
-    padding: 28px;
-    border: 2px solid #222;
-    border-radius: 12px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-    animation: shopAppear 0.18s ease-out;
-}
-
-@keyframes shopAppear {
-    from {
-        opacity: 0;
-        transform: scale(0.92);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.shop-close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 36px;
-    height: 36px;
-    border: none;
-    border-radius: 7px;
-    background: #f3212b;
-    color: white;
-    font-size: 23px;
-    cursor: pointer;
-}
-
-.shop-close:hover {
-    background: #c91420;
-}
-
-.shop-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 28px;
-    padding-right: 38px;
-}
-
-.shop-gem {
-    width: 30px;
-    height: 38px;
-    flex-shrink: 0;
-}
-
-.shop-count {
-    font-size: 27px;
-    font-weight: bold;
-    letter-spacing: 2px;
-}
-
-.shop-buttons {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
-}
-
-.shop-option {
-    min-height: 90px;
-    background: #151515;
-    border: 2px solid #2c2c2c;
-    border-radius: 9px;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s, transform 0.2s;
-}
-
-.shop-option:hover {
-    background: #202020;
-    border-color: #27ae60;
-    transform: translateY(-2px);
-}
-
-.option-gem {
-    display: block;
-    color: #35e75b;
-    font-size: 25px;
-    margin-bottom: 8px;
 }
 
 /* MOBILE */
@@ -272,23 +176,6 @@ body {
         height: 34px;
         font-size: 22px;
     }
-
-    .shop-window {
-        padding: 22px 16px;
-    }
-
-    .shop-header {
-        margin-bottom: 22px;
-    }
-
-    .shop-option {
-        min-height: 80px;
-        font-size: 15px;
-    }
-
-    .shop-buttons {
-        gap: 10px;
-    }
 }
 </style>
 </head>
@@ -303,66 +190,15 @@ body {
         <div class="gem-count">0000</div>
     </div>
 
-    <button class="gem-plus" type="button" onclick="openShop()">+</button>
+    <button class="gem-plus" type="button">+</button>
 </div>
 
 <div class="center">
     <button class="retro-button"
-        onclick="window.location.href='retroegg.html'">
+    onclick="window.location.href='retroegg.html'">
         RETROegg
     </button>
 </div>
-
-<!-- GEMS WINDOW -->
-
-<div class="shop-overlay" id="shopOverlay" onclick="outsideClose(event)">
-    <div class="shop-window">
-        <button class="shop-close" onclick="closeShop()">×</button>
-
-        <div class="shop-header">
-            <div class="gem-icon shop-gem"></div>
-            <div class="shop-count">0000</div>
-        </div>
-
-        <div class="shop-buttons">
-            <button class="shop-option" type="button">
-                <span class="option-gem">◆</span>
-                GEMS
-            </button>
-
-            <button class="shop-option" type="button">
-                <span class="option-gem">✦</span>
-                BOOSTS
-            </button>
-
-            <button class="shop-option" type="button">
-                <span class="option-gem">⬡</span>
-                EXTRAS
-            </button>
-
-            <button class="shop-option" type="button">
-                <span class="option-gem">✧</span>
-                MORE
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-function openShop() {
-    document.getElementById("shopOverlay").style.display = "flex";
-}
-
-function closeShop() {
-    document.getElementById("shopOverlay").style.display = "none";
-}
-
-function outsideClose(event) {
-    if (event.target.id === "shopOverlay") {
-        closeShop();
-    }
-}
-</script>
 
 </body>
 </html>
