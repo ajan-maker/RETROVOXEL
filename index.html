@@ -27,96 +27,6 @@ body {
     letter-spacing: 1px;
 }
 
-/* GEMS DISPLAY */
-
-.gems-container {
-    position: absolute;
-    top: 18px;
-    right: 22px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.gems-box {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #111111;
-    padding: 7px 12px;
-    border-radius: 6px;
-    min-height: 40px;
-}
-
-.gem-icon {
-    width: 25px;
-    height: 31px;
-    background: linear-gradient(
-        135deg,
-        #a5ff9c 0%,
-        #35e75b 35%,
-        #16b83d 65%,
-        #087d29 100%
-    );
-    clip-path: polygon(
-        25% 0%,
-        75% 0%,
-        100% 35%,
-        50% 100%,
-        0% 35%
-    );
-    filter: drop-shadow(0 0 4px #27ae60);
-    position: relative;
-}
-
-/* Crystal shine */
-
-.gem-icon::after {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 6px;
-    width: 7px;
-    height: 15px;
-    background: rgba(255, 255, 255, 0.55);
-    clip-path: polygon(0 0, 100% 0, 100% 100%);
-}
-
-.gem-count {
-    color: white;
-    font-size: 20px;
-    font-weight: bold;
-    letter-spacing: 1px;
-}
-
-.gem-plus {
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 6px;
-    background: #27ae60;
-    color: white;
-    font-size: 25px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.2s;
-    padding: 0;
-}
-
-.gem-plus:hover {
-    background: #219150;
-    transform: scale(1.08);
-}
-
-.gem-plus:active {
-    transform: scale(0.95);
-}
-
-/* CENTER BUTTON */
-
 .center {
     position: absolute;
     top: 50%;
@@ -140,57 +50,12 @@ body {
     background: #219150;
     transform: scale(1.05);
 }
-
-/* MOBILE */
-
-@media (max-width: 500px) {
-    .logo {
-        left: 12px;
-        top: 18px;
-        font-size: 20px;
-    }
-
-    .gems-container {
-        top: 15px;
-        right: 12px;
-        gap: 7px;
-    }
-
-    .gems-box {
-        gap: 8px;
-        padding: 5px 8px;
-        min-height: 34px;
-    }
-
-    .gem-icon {
-        width: 20px;
-        height: 26px;
-    }
-
-    .gem-count {
-        font-size: 17px;
-    }
-
-    .gem-plus {
-        width: 34px;
-        height: 34px;
-        font-size: 22px;
-    }
-}
 </style>
 </head>
 
 <body>
 
 <div class="logo">RETROVOXEL</div>
-
-<div class="gems-container">
-    <div class="gems-box">
-        <div class="gem-icon"></div>
-        <div class="gem-count">0000</div>
-    </div>
-
-</div>
 
 <div class="center">
     <button class="retro-button"
