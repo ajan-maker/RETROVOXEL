@@ -1,0 +1,895 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>RETROGRAB</title>
+
+<style>
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  font-family:Arial,sans-serif;
+  background:#87ceeb;
+  touch-action:none;
+}
+
+canvas{
+  display:block;
+  position:fixed;
+  inset:0;
+  z-index:0;
+  touch-action:none;
+}
+
+#moneyDisplay{
+  position:fixed;
+  top:18px;
+  right:20px;
+  z-index:5;
+  font-size:25px;
+  font-weight:900;
+  letter-spacing:2px;
+  color:white;
+  text-shadow:2px 2px 4px black;
+  pointer-events:none;
+}
+
+#mobileControls{
+  display:none;
+  position:fixed;
+  inset:0;
+  z-index:10;
+  pointer-events:none;
+}
+
+#mobileMove{
+  position:absolute;
+  left:14px;
+  bottom:18px;
+  width:150px;
+  height:150px;
+  pointer-events:auto;
+}
+
+.moveBtn{
+  position:absolute;
+  width:48px;
+  height:48px;
+  padding:0;
+  border:2px solid #ffffffaa;
+  border-radius:10px;
+  background:#222c;
+  color:white;
+  font-size:24px;
+  touch-action:none;
+  user-select:none;
+  -webkit-user-select:none;
+}
+
+.moveBtn.active{
+  background:#777e;
+}
+
+#moveForward{top:0;left:51px}
+#moveLeft{top:51px;left:0}
+#moveBack{top:51px;left:51px}
+#moveRight{top:51px;left:102px}
+
+#mobileMenu{
+  position:absolute;
+  top:12px;
+  left:12px;
+  min-width:90px;
+  min-height:42px;
+  padding:10px 14px;
+  background:#222d;
+  border:1px solid #ffffff66;
+  color:white;
+  font-weight:bold;
+  pointer-events:auto;
+  touch-action:manipulation;
+}
+
+#message{
+  position:fixed;
+  top:65px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:15;
+  padding:9px 15px;
+  background:#000b;
+  color:white;
+  border-radius:6px;
+  font-weight:bold;
+  opacity:0;
+  pointer-events:none;
+  text-align:center;
+}
+
+@media(pointer:coarse),(max-width:800px){
+  #moneyDisplay{
+    top:12px;
+    right:10px;
+    font-size:18px;
+    letter-spacing:1px;
+  }
+}
+</style>
+
+<script type="importmap">
+{
+  "imports":{
+    "three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js"
+  }
+}
+</script>
+</head>
+
+<body>
+
+<div id="moneyDisplay">00.00</div>
+<div id="message"></div>
+
+<div id="mobileControls">
+  <button id="mobileMenu">MENU</button>
+
+  <div id="mobileMove">
+    <button class="moveBtn" id="moveForward">▲</button>
+    <button class="moveBtn" id="moveLeft">◀</button>
+    <button class="moveBtn" id="moveBack">▼</button>
+    <button class="moveBtn" id="moveRight">▶</button>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from "three";
+
+// ========================================
+// RETROGRAB - WORLD
+// ========================================
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x87ceeb);
+scene.fog = new THREE.Fog(0x87ceeb, 100, 280);
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  innerWidth / innerHeight,
+  0.1,
+  1000
+);
+
+const renderer = new THREE.WebGLRenderer({
+  antialias:true
+});
+
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+document.body.prepend(renderer.domElement);
+
+// ========================================
+// LIGHTING
+// ========================================
+
+scene.add(
+  new THREE.HemisphereLight(0xffffff,0x777777,2)
+);
+
+const sun = new THREE.DirectionalLight(0xffffff,2.3);
+sun.position.set(30,55,20);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048,2048);
+scene.add(sun);
+
+// ========================================
+// WHITE GROUND
+// Grass top and dirt underneath are both white.
+// ========================================
+
+const whiteTextureCanvas = document.createElement("canvas");
+whiteTextureCanvas.width = 256;
+whiteTextureCanvas.height = 256;
+
+const whiteCtx = whiteTextureCanvas.getContext("2d");
+
+whiteCtx.fillStyle = "#ffffff";
+whiteCtx.fillRect(0,0,256,256);
+
+for(let i=0;i<2500;i++){
+  const x = Math.random()*256;
+  const y = Math.random()*256;
+  const size = 1+Math.random()*2;
+
+  whiteCtx.fillStyle =
+    Math.random()>0.5 ? "#ffffff" : "#f7f7f7";
+
+  whiteCtx.fillRect(x,y,size,size);
+}
+
+const whiteTexture = new THREE.CanvasTexture(whiteTextureCanvas);
+whiteTexture.wrapS = THREE.RepeatWrapping;
+whiteTexture.wrapT = THREE.RepeatWrapping;
+whiteTexture.repeat.set(36,14);
+whiteTexture.colorSpace = THREE.SRGBColorSpace;
+
+const whiteTop = new THREE.MeshStandardMaterial({
+  map:whiteTexture,
+  color:0xffffff,
+  roughness:1
+});
+
+const whiteSide = new THREE.MeshStandardMaterial({
+  color:0xffffff,
+  roughness:1
+});
+
+const groundMaterials = [
+  whiteSide,
+  whiteSide,
+  whiteTop,
+  whiteSide,
+  whiteSide,
+  whiteSide
+];
+
+const MAP_WIDTH = 150;
+const MAP_DEPTH = 45;
+
+const ground = new THREE.Mesh(
+  new THREE.BoxGeometry(MAP_WIDTH,3,MAP_DEPTH),
+  groundMaterials
+);
+
+ground.position.set(0,-1.5,0);
+ground.receiveShadow = true;
+ground.castShadow = true;
+scene.add(ground);
+
+// ========================================
+// GREEN CARPET
+// ========================================
+
+const carpetLength = 150;
+const carpetWidth = 5;
+
+const carpetMaterial = new THREE.MeshStandardMaterial({
+  color:0x19c83d,
+  roughness:1
+});
+
+const carpet = new THREE.Mesh(
+  new THREE.BoxGeometry(carpetLength,0.14,carpetWidth),
+  carpetMaterial
+);
+
+carpet.position.set(0,0.07,0);
+carpet.receiveShadow = true;
+scene.add(carpet);
+
+// ========================================
+// BLACK END WALLS
+// ========================================
+
+const wallHeight = 4;
+const wallThickness = 0.6;
+
+const wallMaterial = new THREE.MeshStandardMaterial({
+  color:0x000000,
+  roughness:1
+});
+
+for(const x of [
+  -(carpetLength/2-wallThickness/2),
+  carpetLength/2-wallThickness/2
+]){
+  const wall = new THREE.Mesh(
+    new THREE.BoxGeometry(
+      wallThickness,
+      wallHeight,
+      carpetWidth
+    ),
+    wallMaterial
+  );
+
+  wall.position.set(x,wallHeight/2,0);
+  wall.castShadow = true;
+  wall.receiveShadow = true;
+  scene.add(wall);
+}
+
+// ========================================
+// BASE - STONE PLATFORM
+// ========================================
+
+const stoneGroundMaterial = new THREE.MeshStandardMaterial({
+  color:0x85898d,
+  roughness:1,
+  flatShading:true
+});
+
+const stoneGround = new THREE.Mesh(
+  new THREE.BoxGeometry(13,0.7,11),
+  stoneGroundMaterial
+);
+
+stoneGround.position.set(-64,0.35,-15);
+stoneGround.receiveShadow = true;
+stoneGround.castShadow = true;
+scene.add(stoneGround);
+
+// ========================================
+// FOUR DARK STONES
+// ========================================
+
+const darkStoneMaterial = new THREE.MeshStandardMaterial({
+  color:0x45494e,
+  roughness:1,
+  flatShading:true
+});
+
+const darkStonePositions = [
+  [-67,-17],
+  [-61,-17],
+  [-67,-12],
+  [-61,-12]
+];
+
+for(const [x,z] of darkStonePositions){
+  const darkStone = new THREE.Mesh(
+    new THREE.BoxGeometry(3,0.25,3),
+    darkStoneMaterial
+  );
+
+  darkStone.position.set(x,0.825,z);
+  darkStone.castShadow = true;
+  darkStone.receiveShadow = true;
+  scene.add(darkStone);
+}
+
+// ========================================
+// FOUR GREEN PLATES
+// ========================================
+
+const greenPlateMaterial = new THREE.MeshStandardMaterial({
+  color:0x25d43b,
+  roughness:0.8
+});
+
+const greenPlatePositions = [
+  [-67,-13.5],
+  [-61,-13.5],
+  [-67,-8.5],
+  [-61,-8.5]
+];
+
+for(const [x,z] of greenPlatePositions){
+  const greenPlate = new THREE.Mesh(
+    new THREE.BoxGeometry(3,0.18,2),
+    greenPlateMaterial
+  );
+
+  greenPlate.position.set(x,0.79,z);
+  greenPlate.castShadow = true;
+  greenPlate.receiveShadow = true;
+  scene.add(greenPlate);
+}
+
+// ========================================
+// MONEY
+// ========================================
+
+const moneyDisplay = document.getElementById("moneyDisplay");
+
+let money = 0;
+}
+
+function formatMoney(amount){
+  return amount.toFixed(2).padStart(5,"0");
+}
+
+function updateMoneyDisplay(){
+  moneyDisplay.textContent = formatMoney(money);
+}
+  
+updateMoneyDisplay();
+
+// ========================================
+// TEXT SPRITES
+// ========================================
+
+function makeTextSprite(text,options={}){
+  const canvas = document.createElement("canvas");
+
+  canvas.width = options.width || 512;
+  canvas.height = options.height || 128;
+
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  ctx.font = `900 ${options.fontSize || 58}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = options.outlineWidth || 8;
+  ctx.strokeStyle = options.outline || "#202020";
+
+  ctx.strokeText(
+    text,
+    canvas.width/2,
+    canvas.height/2
+  );
+
+  ctx.fillStyle = options.color || "#ffffff";
+
+  ctx.fillText(
+    text,
+    canvas.width/2,
+    canvas.height/2
+  );
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  const material = new THREE.SpriteMaterial({
+    map:texture,
+    transparent:true,
+    depthTest:false
+  });
+
+  const sprite = new THREE.Sprite(material);
+  sprite.renderOrder = 10;
+
+  return sprite;
+}
+
+function setSpriteText(sprite,text,options={}){
+  const canvas = document.createElement("canvas");
+  canvas.width = options.width || 512;
+  canvas.height = options.height || 128;
+
+  const ctx = canvas.getContext("2d");
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.font = `900 ${options.fontSize || 64}px Arial`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.lineJoin = "round";
+  ctx.lineWidth = options.outlineWidth || 10;
+  ctx.strokeStyle = options.outline || "#126d20";
+
+  ctx.strokeText(text,canvas.width/2,canvas.height/2);
+
+  ctx.fillStyle = options.color || "#ffffff";
+  ctx.fillText(text,canvas.width/2,canvas.height/2);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+
+  if(sprite.material.map){
+    sprite.material.map.dispose();
+  }
+
+  sprite.material.map = texture;
+  sprite.material.needsUpdate = true;
+}
+
+// ========================================
+// MONEY LABELS ABOVE GREEN PLATES
+// ========================================
+
+const plateMoneyLabels = [];
+
+for(const [x,z] of greenPlatePositions){
+  const sprite = makeTextSprite("00.00",{
+    fontSize:64,
+    color:"#ffffff",
+    outline:"#126d20",
+    outlineWidth:10
+  });
+
+  sprite.position.set(x,1.45,z);
+  sprite.scale.set(2.7,0.68,1);
+
+  scene.add(sprite);
+
+  plateMoneyLabels.push({
+    x,
+    z,
+    amount:0,
+    timer:0,
+    sprite
+  });
+}
+
+// The front-right plate is the STARTER earning plate.
+const starterPlatePosition = new THREE.Vector3(-61,0.79,-8.5);
+
+const starterPlate = plateMoneyLabels.find(
+  label => label.x===-61 && label.z===-8.5
+);
+
+// ========================================
+// PLAYER CHARACTER
+// ========================================
+
+const playerStone = new THREE.Mesh(
+  new THREE.BoxGeometry(1.35,1.35,1.35),
+  new THREE.MeshStandardMaterial({
+    color:0x888888,
+    roughness:1
+  })
+);
+
+playerStone.position.set(-64,4,-5);
+playerStone.castShadow = true;
+playerStone.receiveShadow = true;
+scene.add(playerStone);
+
+// ========================================
+// STARTER CUBE
+// ========================================
+
+const starterCube = new THREE.Mesh(
+  new THREE.BoxGeometry(1.35,1.35,1.35),
+  new THREE.MeshStandardMaterial({
+    color:0xc99a6b,
+    roughness:0.85
+  })
+);
+
+starterCube.position.set(-61,1.625,-12);
+starterCube.castShadow = true;
+starterCube.receiveShadow = true;
+scene.add(starterCube);
+
+// STARTER name
+const starterName = makeTextSprite("STARTER",{
+  width:768,
+  height:128,
+  fontSize:60,
+  color:"#ffffff",
+  outline:"#583c25",
+  outlineWidth:9
+});
+
+starterName.position.set(-61,3.55,-12);
+starterName.scale.set(3.3,0.7,1);
+scene.add(starterName);
+
+// STARTER earning value
+const starterPrice = makeTextSprite("05.00",{
+  fontSize:64,
+  color:"#fff1c9",
+  outline:"#583c25",
+  outlineWidth:9
+});
+
+starterPrice.position.set(-61,2.85,-12);
+starterPrice.scale.set(2.2,0.58,1);
+scene.add(starterPrice);
+
+// ========================================
+// CAMERA AND PLAYER MOVEMENT
+// ========================================
+
+const mobileDevice = matchMedia(
+  "(pointer: coarse), (max-width: 800px)"
+);
+
+const mobileControls = document.getElementById("mobileControls");
+
+let yaw = 0;
+let isLocked = false;
+let mobileLooking = false;
+let lookPointerId = null;
+let lastTouchX = 0;
+
+const keys = {};
+
+function updateCameraRotation(){
+  const distance = 7;
+  const height = 2.5;
+
+  camera.position.set(
+    playerStone.position.x + Math.sin(yaw)*distance,
+    playerStone.position.y + height,
+    playerStone.position.z + Math.cos(yaw)*distance
+  );
+
+  camera.lookAt(
+    playerStone.position.x,
+    playerStone.position.y,
+    playerStone.position.z
+  );
+}
+
+function updatePlayer(delta){
+  const speed = 12;
+
+  const forward = new THREE.Vector3(
+    -Math.sin(yaw),0,-Math.cos(yaw)
+  );
+
+  const right = new THREE.Vector3(
+    Math.cos(yaw),0,-Math.sin(yaw)
+  );
+
+  const direction = new THREE.Vector3();
+
+  if(keys.KeyW) direction.add(forward);
+  if(keys.KeyS) direction.sub(forward);
+  if(keys.KeyD) direction.add(right);
+  if(keys.KeyA) direction.sub(right);
+
+  if(direction.lengthSq()>0){
+    direction.normalize().multiplyScalar(speed*delta);
+    playerStone.position.add(direction);
+  }
+
+  playerStone.position.x = THREE.MathUtils.clamp(
+    playerStone.position.x,-73,73
+  );
+
+  playerStone.position.z = THREE.MathUtils.clamp(
+    playerStone.position.z,-21,21
+  );
+
+  playerStone.position.y = THREE.MathUtils.clamp(
+    playerStone.position.y,1,80
+  );
+
+  updateCameraRotation();
+}
+
+// Click to capture the mouse on desktop.
+// Mobile starts immediately without a menu.
+if(mobileDevice.matches){
+  isLocked = true;
+  mobileControls.style.display = "block";
+}else{
+  renderer.domElement.addEventListener("click",()=>{
+    if(!isLocked){
+      renderer.domElement.requestPointerLock();
+    }
+  });
+}
+
+document.addEventListener("pointerlockchange",()=>{
+  if(mobileDevice.matches) return;
+
+  isLocked = document.pointerLockElement===renderer.domElement;
+
+  for(const code in keys){
+    keys[code] = false;
+  }
+});
+
+document.addEventListener("mousemove",event=>{
+  if(!isLocked || mobileDevice.matches) return;
+
+  yaw -= event.movementX*0.002;
+});
+
+document.addEventListener("keydown",event=>{
+  const active = document.activeElement;
+
+  if(active && (
+    active.tagName==="INPUT" ||
+    active.tagName==="TEXTAREA"
+  )){
+    return;
+  }
+
+  keys[event.code] = true;
+
+  if(event.code==="Escape" && isLocked && mobileDevice.matches){
+    event.preventDefault();
+  }
+});
+
+document.addEventListener("keyup",event=>{
+  keys[event.code] = false;
+});
+
+// ========================================
+// MOBILE CONTROLS
+// ========================================
+
+function mobileButton(id,keyCode){
+  const btn = document.getElementById(id);
+
+  btn.addEventListener("pointerdown",event=>{
+    event.preventDefault();
+    event.stopPropagation();
+
+    btn.setPointerCapture(event.pointerId);
+    keys[keyCode] = true;
+    btn.classList.add("active");
+  });
+
+  function release(){
+    keys[keyCode] = false;
+    btn.classList.remove("active");
+  }
+
+  btn.addEventListener("pointerup",release);
+  btn.addEventListener("pointercancel",release);
+  btn.addEventListener("lostpointercapture",release);
+}
+
+mobileButton("moveForward","KeyW");
+mobileButton("moveBack","KeyS");
+mobileButton("moveLeft","KeyA");
+mobileButton("moveRight","KeyD");
+
+// The MENU button now simply releases movement and
+// resets the character's position. No menu is opened.
+document.getElementById("mobileMenu").addEventListener("click",()=>{
+  for(const code in keys){
+    keys[code] = false;
+  }
+
+  playerStone.position.set(-64,4,-5);
+  yaw = 0;
+  updateCameraRotation();
+  showMessage("POSITION RESET");
+});
+
+// Horizontal camera movement on mobile.
+renderer.domElement.addEventListener("pointerdown",event=>{
+  if(!mobileDevice.matches || !isLocked) return;
+  if(event.target.closest && event.target.closest("button")) return;
+
+  mobileLooking = true;
+  lookPointerId = event.pointerId;
+  lastTouchX = event.clientX;
+});
+
+renderer.domElement.addEventListener("pointermove",event=>{
+  if(!mobileLooking || event.pointerId!==lookPointerId) return;
+
+  const dx = event.clientX-lastTouchX;
+  lastTouchX = event.clientX;
+
+  yaw -= dx*0.006;
+});
+
+function stopMobileLooking(){
+  mobileLooking = false;
+  lookPointerId = null;
+}
+
+renderer.domElement.addEventListener("pointerup",stopMobileLooking);
+renderer.domElement.addEventListener("pointercancel",stopMobileLooking);
+
+// ========================================
+// MESSAGES
+// ========================================
+
+let messageTimeout = null;
+
+function showMessage(text){
+  const el = document.getElementById("message");
+
+  el.textContent = text;
+  el.style.opacity = "1";
+
+  clearTimeout(messageTimeout);
+
+  messageTimeout = setTimeout(()=>{
+    el.style.opacity = "0";
+  },1800);
+}
+
+// ========================================
+// STARTER PLATE MONEY SYSTEM
+// Earn 05.00 every 5 seconds.
+// Collect it by walking onto the green plate.
+// ========================================
+
+function updateStarterPlate(delta){
+  if(!starterPlate) return;
+
+  starterPlate.timer += delta;
+
+  while(starterPlate.timer>=5){
+    starterPlate.timer -= 5;
+    starterPlate.amount += 5.00;
+  }
+
+  setSpriteText(
+    starterPlate.sprite,
+    formatMoney(starterPlate.amount),
+    {
+      fontSize:64,
+      color:"#ffffff",
+      outline:"#126d20",
+      outlineWidth:10
+    }
+  );
+
+  const dx = playerStone.position.x-starterPlatePosition.x;
+  const dz = playerStone.position.z-starterPlatePosition.z;
+
+  const isOnPlate = Math.abs(dx)<1.5 && Math.abs(dz)<1;
+
+  if(isLocked && isOnPlate && starterPlate.amount>0){
+    const collected = starterPlate.amount;
+
+    money += collected;
+    updateMoneyDisplay();
+
+    starterPlate.amount = 0;
+    starterPlate.timer = 0;
+
+    setSpriteText(
+      starterPlate.sprite,
+      "00.00",
+      {
+        fontSize:64,
+        color:"#ffffff",
+        outline:"#126d20",
+        outlineWidth:10
+      }
+    );
+
+    showMessage("+"+formatMoney(collected)+" MONEY!");
+  }
+}
+
+// ========================================
+// ANIMATION
+// ========================================
+
+let lastTime = performance.now();
+
+function animate(now){
+  requestAnimationFrame(animate);
+
+  const delta = Math.min((now-lastTime)/1000,0.05);
+  lastTime = now;
+
+  // STARTER cube keeps rotating.
+  starterCube.rotation.y += delta*0.8;
+  starterCube.rotation.x = Math.sin(now*0.0008)*0.08;
+
+  if(isLocked){
+    playerStone.rotation.y += delta*0.3;
+    updatePlayer(delta);
+  }
+
+  updateStarterPlate(delta);
+
+  renderer.render(scene,camera);
+}
+
+updateCameraRotation();
+requestAnimationFrame(animate);
+
+// ========================================
+// RESIZE
+// ========================================
+
+addEventListener("resize",()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+
+  updateCameraRotation();
+});
+</script>
+
+</body>
+</html>
