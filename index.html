@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,6 +33,10 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
 }
 
 .retro-button {
@@ -44,6 +49,7 @@ body {
     cursor: pointer;
     border-radius: 6px;
     transition: background 0.2s, transform 0.2s;
+    min-width: 210px;
 }
 
 .retro-button:hover {
@@ -61,6 +67,11 @@ body {
     <button class="retro-button"
     onclick="window.location.href='retroegg.html'">
         RETROegg
+    </button>
+
+    <button class="retro-button"
+    onclick="window.location.href='retrograb.html'">
+        RETROgrab
     </button>
 </div>
 
