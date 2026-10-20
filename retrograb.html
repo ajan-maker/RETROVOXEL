@@ -393,16 +393,13 @@ const moneyDisplay = document.getElementById("moneyDisplay");
 let money = 0;
 
 function formatMoney(amount){
-}
-
-function formatMoney(amount){
   return amount.toFixed(2).padStart(5,"0");
 }
 
 function updateMoneyDisplay(){
   moneyDisplay.textContent = formatMoney(money);
 }
-  
+
 updateMoneyDisplay();
 
 // ========================================
